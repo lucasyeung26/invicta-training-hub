@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#0A1628"/>
+<title>Invicta Training Hub</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<style>
+/*
+ * Invicta Financial — Adviser Training Hub
+ * localStorage keys used:
+ *   inv_name          — adviser display name
+ *   inv_role          — 'adviser' | 'manager'
+ *   inv_el            — ElevenLabs API key
+ *   inv_voice         — selected TTS voice name
+ *   inv_recent_profiles — JSON array of recent adviser names
+ *   invicta_history   — JSON array of session results (capped 100)
+ *   invicta_xp_{name} — XP total for adviser (name lowercase, spaces→_)
+ *   invicta_streak_{name} — JSON {streak, lastDate} for adviser
+ */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue-900:#0A1628;--blue-800:#0D2044;--blue-700:#103060;--blue-600:#1A4A8A;
+  --blue-500:#1E5FBB;--blue-400:#2E7DD4;--blue-300:#5B9FE8;--blue-200:#A8CFFA;
+  --blue-100:#D6EAFF;--blue-50:#EEF5FF;
+  --white:#FFFFFF;--off-white:#F5F8FF;--border:#D0DCF0;--border-light:#E6EFF9;
+  --text:#0A1628;--text-muted:#4A6080;
+  --success:#0EA06B;--danger:#D93025;--amber:#C87B0A;
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:var(--text);min-height:100vh}
+.app{display:flex;min-height:100vh}
+.sidebar{width:225px;background:radial-gradient(ellipse at top left,#0D2044 0%,#0A1628 100%);flex-shrink:0;display:flex;flex-direction:column}
+.nav-group-label{padding:18px 14px 6px;font-size:9px;text-transform:uppercase;letter-spacing:1.8px;color:var(--blue-700)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--blue-400);transition:all 0.18s cubic-bezier(0.4,0,0.2,1);margin:1px 6px}
+.nav-item:hover{background:var(--blue-800);color:#fff}
+.nav-item.active{background:var(--blue-700);color:#fff;box-shadow:0 0 0 1px rgba(46,125,212,0.3),inset 0 0 12px rgba(46,125,212,0.08)}
+.nav-item i{font-size:15px}
+.sidebar-footer{margin-top:auto;padding:12px;border-top:1px solid var(--blue-800)}
+.av-circle{width:32px;height:32px;border-radius:50%;background:var(--blue-600);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.main{flex:1;overflow:auto;min-width:0}
+.topbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--white);position:sticky;top:0;z-index:10;box-shadow:0 1px 0 var(--border),0 2px 8px rgba(10,22,40,0.04)}
+.page-title{font-size:19px;font-weight:700}
+.btn{padding:7px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--text);transition:all 0.18s cubic-bezier(0.4,0,0.2,1)}
+.btn:hover{background:var(--blue-50)}
+.btn-primary{background:linear-gradient(135deg,var(--blue-500),var(--blue-600));border-color:var(--blue-500);color:#fff;box-shadow:0 2px 8px rgba(30,95,187,0.22)}
+.btn-primary:hover{background:linear-gradient(135deg,var(--blue-400),var(--blue-500));box-shadow:0 4px 14px rgba(30,95,187,0.32);transform:translateY(-1px)}
+.btn-dark{background:var(--blue-900);border-color:var(--blue-900);color:#fff}
+.btn-dark:hover{background:var(--blue-800)}
+.content{padding:24px}
+.card{background:var(--white);border:1.5px solid var(--border-light);border-radius:var(--radius);padding:20px;box-shadow:0 1px 3px rgba(10,22,40,0.06),0 4px 12px rgba(10,22,40,0.04);transition:all 0.18s cubic-bezier(0.4,0,0.2,1)}
+.card-sm{padding:14px 16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px}
+.stat-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px}
+.stat-val{font-size:26px;font-weight:800;line-height:1}
+.stat-sub{font-size:12px;color:var(--text-muted);margin-top:4px}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-blue{background:var(--blue-100);color:var(--blue-700)}
+.badge-green{background:#D1FAE5;color:#065F46}
+.badge-amber{background:#FFF3DB;color:#92580A}
+.badge-red{background:#FEE2E2;color:#991B1B}
+.progress-bar{height:5px;background:var(--border-light);border-radius:3px;overflow:hidden}
+.pf{height:100%;border-radius:3px;background:var(--blue-500);transition:width 0.6s ease}
+.pf.amber{background:var(--amber)}.pf.danger{background:var(--danger)}
+.section-head{font-size:15px;font-weight:700;margin-bottom:14px}
+.task-row{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1.5px solid var(--border-light)}
+.task-row:last-child{border-bottom:none;padding-bottom:0}
+.t-icon{width:30px;height:30px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.sc-card{border:1.5px solid var(--border-light);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);background:var(--white);box-shadow:0 1px 3px rgba(10,22,40,0.06),0 4px 12px rgba(10,22,40,0.04)}
+.sc-card:hover{border-color:var(--blue-400);box-shadow:0 4px 16px rgba(10,22,40,0.12);transform:translateY(-1px)}
+.sc-diff{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px}
+.sc-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.sc-desc{font-size:12px;color:var(--text-muted);line-height:1.5}
+.fw-pill{display:inline-flex;gap:4px;margin-top:10px;font-size:10px;font-weight:700;color:var(--blue-600);background:var(--blue-50);border:1px solid var(--blue-100);border-radius:20px;padding:3px 9px}
+.hidden{display:none!important}
+.mtable{width:100%;border-collapse:collapse;font-size:13px}
+.mtable th{padding:9px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);border-bottom:1.5px solid var(--border);font-weight:600}
+.mtable td{padding:10px 12px;border-bottom:1px solid var(--border-light)}
+.mtable tr:last-child td{border-bottom:none}
+.setup-overlay{position:fixed;inset:0;background:rgba(10,22,40,0.92);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.setup-card{background:var(--white);border-radius:20px;width:min(480px,100%);padding:36px;box-shadow:0 20px 60px rgba(10,22,40,0.3),0 4px 16px rgba(10,22,40,0.15)}
+.setup-label{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.setup-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;outline:none;font-family:monospace;color:var(--text)}
+.setup-input:focus{border-color:var(--blue-400)}
+.setup-note{font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.5}
+.setup-note a{color:var(--blue-500);text-decoration:none}
+.voice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.voice-opt{border:1.5px solid var(--border-light);border-radius:var(--radius-sm);padding:12px;cursor:pointer;transition:all 0.18s cubic-bezier(0.4,0,0.2,1)}
+.voice-opt:hover{border-color:var(--blue-300);background:var(--blue-50)}
+.voice-opt.sel{border-color:var(--blue-500);background:var(--blue-50)}
+.call-screen{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 20px 32px;background:linear-gradient(160deg,var(--blue-900) 0%,var(--blue-800) 60%,#0A1E3A 100%)}
+.call-pill{display:inline-block;padding:4px 14px;border-radius:20px;background:rgba(255,255,255,0.08);font-size:10px;text-transform:uppercase;letter-spacing:1.8px;color:var(--blue-300);margin-bottom:8px}
+.call-name{font-size:24px;font-weight:800;color:#fff;margin-bottom:4px}
+.call-timer{font-size:13px;color:var(--blue-500);font-variant-numeric:tabular-nums}
+.call-mid{display:flex;flex-direction:column;align-items:center;gap:11px;width:100%;max-width:540px}
+.av-wrap{position:relative;width:110px;height:110px;display:flex;align-items:center;justify-content:center}
+.av-ring{position:absolute;border-radius:50%;border:1.5px solid var(--blue-500);opacity:0;transition:opacity 0.2s}
+.av-ring.r1{inset:0}.av-ring.r2{inset:-12px;border-color:rgba(46,125,212,0.45)}.av-ring.r3{inset:-24px;border-color:rgba(46,125,212,0.18)}
+.av-ring.on{opacity:1}
+.av-ring.r2.on{animation:rp2 1.5s ease-in-out infinite}
+.av-ring.r3.on{animation:rp3 1.5s ease-in-out infinite 0.25s}
+@keyframes rp2{0%,100%{transform:scale(1);opacity:0.45}50%{transform:scale(1.05);opacity:0.85}}
+@keyframes rp3{0%,100%{transform:scale(1);opacity:0.18}50%{transform:scale(1.09);opacity:0.45}}
+.av-core{width:82px;height:82px;border-radius:50%;background:var(--blue-800);border:2px solid var(--blue-700);display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.av-init{font-size:30px;font-weight:800;color:var(--blue-300)}
+.pers-tag{font-size:11px;color:var(--blue-400);font-style:italic}
+.step-track{display:flex;gap:5px;width:100%}
+.step-box{flex:1;padding:5px 6px;border-radius:6px;border:1px solid rgba(255,255,255,0.07);text-align:center}
+.step-box .sn{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.25);margin-bottom:1px}
+.step-box .sl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.3)}
+.step-box.active{border-color:var(--blue-400);background:rgba(46,125,212,0.15)}
+.step-box.active .sn{color:var(--blue-300)}.step-box.active .sl{color:#fff}
+.step-box.done{border-color:rgba(14,160,107,0.4);background:rgba(14,160,107,0.08)}
+.step-box.done .sn{color:rgba(14,160,107,0.6)}.step-box.done .sl{color:rgba(14,160,107,0.9)}
+.tx-box{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:10px 12px;width:100%;min-height:75px;max-height:130px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+.tl{font-size:12px;line-height:1.55}
+.tl.client{color:var(--blue-200)}.tl.adviser{color:#fff}
+.tl.lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.2);margin-bottom:-2px}
+.hint-bar{background:rgba(14,80,160,0.22);border:1px solid rgba(46,125,212,0.3);border-radius:var(--radius-sm);padding:8px 12px;width:100%;display:none}
+.hint-bar.show{display:block}
+.hint-step{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--blue-400);margin-bottom:2px;font-weight:700}
+.hint-text{font-size:11px;color:var(--blue-200);line-height:1.5}
+.hint-script{font-size:11px;color:#fff;font-style:italic;margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.1);line-height:1.6}
+.wave-row{display:flex;align-items:center;gap:3px;height:22px;opacity:0;transition:opacity 0.2s}
+.wb{width:3px;background:var(--blue-300);border-radius:2px;height:3px}
+.wb.live{animation:wa 0.45s ease-in-out infinite}
+.wb:nth-child(1){animation-delay:0s}.wb:nth-child(2){animation-delay:0.06s}.wb:nth-child(3){animation-delay:0.12s}
+.wb:nth-child(4){animation-delay:0.18s}.wb:nth-child(5){animation-delay:0.06s}.wb:nth-child(6){animation-delay:0.12s}.wb:nth-child(7){animation-delay:0s}
+@keyframes wa{0%,100%{height:3px}50%{height:18px}}
+.call-status{font-size:13px;color:var(--blue-400);min-height:16px;text-align:center;font-weight:500}
+.mic-wrap{display:flex;flex-direction:column;align-items:center;gap:5px}
+.mic-ring{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;border:none}
+.mic-ring.listening{background:var(--blue-400);color:#fff;animation:mp 1.6s ease-in-out infinite}
+.mic-ring.muted{background:rgba(255,255,255,0.08);color:#4A6080}
+@keyframes mp{0%,100%{box-shadow:0 0 0 0 rgba(46,125,212,0.5)}50%{box-shadow:0 0 0 12px rgba(46,125,212,0)}}
+.mic-lbl{font-size:10px;color:var(--blue-600);text-align:center}
+.end-btn{background:var(--danger);color:#fff;width:50px;height:50px;border-radius:50%;font-size:17px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.end-btn:hover{background:#B52920}
+.tts-badge{font-size:10px;color:var(--blue-600);background:rgba(255,255,255,0.05);padding:2px 9px;border-radius:20px;border:1px solid rgba(255,255,255,0.08)}
+.score-overlay{position:fixed;inset:0;background:rgba(10,22,40,0.88);backdrop-filter:blur(8px);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
+.score-card{background:var(--white);border-radius:20px;width:min(620px,100%);max-height:94vh;overflow-y:auto;box-shadow:0 20px 60px rgba(10,22,40,0.3),0 4px 16px rgba(10,22,40,0.15)}
+.score-hero{background:linear-gradient(135deg,#0A1628 0%,#0D2044 100%);padding:22px;text-align:center;border-radius:20px 20px 0 0}
+.score-ring{width:84px;height:84px;border-radius:50%;border:3px solid var(--blue-400);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;background:rgba(46,125,212,0.1);box-shadow:0 0 0 4px rgba(46,125,212,0.15),0 0 24px rgba(46,125,212,0.2);animation:scorePulse 2.5s ease-in-out infinite}
+@keyframes scorePulse{0%,100%{box-shadow:0 0 0 4px rgba(46,125,212,0.15),0 0 24px rgba(46,125,212,0.2)}50%{box-shadow:0 0 0 8px rgba(46,125,212,0.1),0 0 32px rgba(46,125,212,0.3)}}
+.score-num{font-size:36px;font-weight:900;color:var(--blue-300)}
+.score-body{padding:18px 22px 22px}
+.sub-scores{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.ss{flex:1;min-width:90px;text-align:center;padding:9px 6px;background:var(--off-white);border-radius:var(--radius-sm);border:1px solid var(--border-light)}
+.ss-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-bottom:3px}
+.ss-val{font-size:19px;font-weight:800}
+.sc-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-light);font-size:12px}
+.sc-row:last-child{border-bottom:none}
+.sc-row-step{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;width:65px;flex-shrink:0;color:var(--text-muted)}
+.sc-row-label{flex:1;color:var(--text-muted)}
+.sc-row-pts{font-weight:700;font-size:12px;white-space:nowrap}
+.fb-item{padding:13px;background:var(--off-white);border-radius:var(--radius-sm);margin-bottom:9px;border:1px solid var(--border-light)}
+.fb-step{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px;color:var(--text-muted)}
+.fb-what{font-size:13px;color:var(--danger);margin-bottom:7px;font-weight:500}
+.fb-script{font-size:12px;color:var(--blue-700);padding:9px 11px;background:var(--blue-50);border-radius:6px;border-left:3px solid var(--blue-400);line-height:1.7;font-style:italic}
+.fb-script strong{font-style:normal;color:var(--blue-600);display:block;margin-bottom:2px;font-size:10px;text-transform:uppercase;letter-spacing:0.4px}
+.cat-head{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin:20px 0 10px}
+.login-overlay{position:fixed;inset:0;background:var(--blue-900);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:var(--white);border-radius:20px;width:min(460px,100%);padding:36px;box-shadow:0 20px 60px rgba(10,22,40,0.3),0 4px 16px rgba(10,22,40,0.15)}
+.role-grid-lg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.role-opt-lg{border:1.5px solid var(--border-light);border-radius:var(--radius-sm);padding:14px 16px;cursor:pointer;transition:all 0.18s cubic-bezier(0.4,0,0.2,1)}
+.role-opt-lg:hover{border-color:var(--blue-300);background:var(--blue-50)}
+.role-opt-lg.sel{border-color:var(--blue-500);background:var(--blue-50);color:var(--blue-800)}
+.sidebar-logo-wrap{padding:14px 14px 10px;border-bottom:1px solid var(--blue-800)}
+.xp-bar-wrap{height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,#F59E0B,var(--amber));border-radius:3px;transition:width 0.5s ease}
+.levelup-overlay{position:fixed;inset:0;background:rgba(10,22,40,0.92);backdrop-filter:blur(8px);z-index:999;display:flex;align-items:center;justify-content:center}
+.lu-card{background:var(--blue-900);border:2px solid var(--amber);border-radius:20px;padding:40px 48px;text-align:center;position:relative;overflow:hidden;animation:luPop 0.45s ease forwards}
+.lu-glow{position:absolute;inset:-40px;background:radial-gradient(circle,rgba(200,123,10,0.18) 0%,transparent 70%);pointer-events:none}
+@keyframes luPop{0%{transform:scale(0.7);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:12px;padding:20px 0 0}
+.podium-card{text-align:center;width:100px}
+.podium-bar-1{height:90px;background:linear-gradient(180deg,#FBBF24,#D97706);border-radius:6px 6px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:8px}
+.podium-bar-2{height:65px;background:linear-gradient(180deg,#9CA3AF,#6B7280);border-radius:6px 6px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:8px}
+.podium-bar-3{height:48px;background:linear-gradient(180deg,#D4A96A,#A37845);border-radius:6px 6px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:6px}
+.mini-chart{display:flex;align-items:flex-end;gap:3px;height:44px}
+.mini-bar{min-height:4px;width:16px;border-radius:2px 2px 0 0;transition:height 0.3s}
+.adviser-card{margin-bottom:14px}
+.call-action-row{display:flex;gap:12px;align-items:center;justify-content:center}
+.call-icon-btn{width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(255,255,255,0.12);color:#fff;transition:all 0.18s cubic-bezier(0.4,0,0.2,1)}
+.call-icon-btn:hover{background:rgba(255,255,255,0.22)}
+.call-icon-btn.muted-on{background:var(--danger)}
+.xp-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;background:linear-gradient(90deg,#F59E0B,#D97706);color:#fff;box-shadow:0 2px 8px rgba(200,123,10,0.4);animation:xpSlideUp 0.4s ease forwards}
+@keyframes xpSlideUp{0%{transform:translateY(16px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.debrief-panel{background:var(--off-white);border:1px solid var(--border-light);border-radius:var(--radius);padding:14px 16px;margin-top:12px}
+.debrief-point{padding:10px 12px;background:var(--white);border-radius:var(--radius-sm);margin-bottom:9px;border:1px solid var(--border-light);font-size:13px;line-height:1.6}
+.debrief-point:last-child{margin-bottom:0}
+.recent-profiles{display:flex;flex-wrap:wrap;gap:7px;margin-top:5px}
+.profile-chip{padding:5px 13px;border-radius:20px;background:var(--blue-50);border:1.5px solid var(--blue-100);font-size:12px;font-weight:600;color:var(--blue-700);cursor:pointer;transition:all 0.12s}
+.profile-chip:hover{background:var(--blue-100);border-color:var(--blue-300)}
+.sc-pb{font-size:10px;font-weight:600;margin-top:5px}
+.card-accent-blue{border-top:3px solid var(--blue-400)}
+.card-accent-green{border-top:3px solid var(--success)}
+.card-accent-amber{border-top:3px solid var(--amber)}
+.card-accent-red{border-top:3px solid var(--danger)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-card">
+    <div style="font-size:28px;font-weight:900;color:var(--blue-900);margin-bottom:4px">INVICTA <span style="color:var(--blue-500)">FINANCIAL</span></div>
+    <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:22px">Adviser Training Hub</div>
+    <div style="font-size:21px;font-weight:800;color:var(--blue-900);margin-bottom:7px">Welcome back</div>
+    <div style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:22px">Enter your name to get started. Progress saves to this browser.</div>
+    <div class="setup-label">Your Full Name</div>
+    <input class="setup-input" type="text" id="input-name" placeholder="e.g. Jamie Turner" style="font-family:inherit" autocomplete="name"/>
+    <div id="recent-profiles-wrap" style="display:none">
+      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;margin-bottom:5px">Recent:</div>
+      <div class="recent-profiles" id="recent-profiles-list"></div>
+    </div>
+    <div style="height:16px"></div>
+    <div class="setup-label">Your Role</div>
+    <div class="role-grid-lg">
+      <div class="role-opt-lg sel" onclick="selRole(this,'adviser')" data-r="adviser">
+        <div style="font-size:13px;font-weight:600">Adviser</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Practice &amp; track progress</div>
+      </div>
+      <div class="role-opt-lg" onclick="selRole(this,'manager')" data-r="manager">
+        <div style="font-size:13px;font-weight:600">Manager</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">View team overview</div>
+      </div>
+    </div>
+    <div style="height:18px"></div>
+    <button class="btn btn-primary" style="width:100%;padding:12px;font-size:14px" onclick="saveProfile()">Enter Training Hub</button>
+    <div style="text-align:center;margin-top:9px;font-size:12px;color:var(--text-muted)">Name saved to this browser only.</div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div class="setup-overlay hidden" id="setup-overlay">
+  <div class="setup-card">
+    <div style="font-size:16px;font-weight:800;color:var(--blue-900);margin-bottom:14px">INVICTA <span style="color:var(--blue-500)">FINANCIAL</span></div>
+    <div style="font-size:21px;font-weight:800;margin-bottom:7px">Set up voice practice</div>
+    <div style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:22px">Enter your ElevenLabs key for NZ voice TTS. All scoring follows the Invicta framework.</div>
+    <div class="setup-label">ElevenLabs API Key</div>
+    <input class="setup-input" type="password" id="input-el" placeholder="sk_..." autocomplete="off"/>
+    <div class="setup-note">Free at <a href="https://elevenlabs.io" target="_blank">elevenlabs.io</a> &rarr; Developers &rarr; API Keys</div>
+    <div style="height:18px"></div>
+    <div class="setup-label">Voice</div>
+    <div class="voice-grid">
+      <div class="voice-opt sel" onclick="selVoice(this,'Callum')" data-v="Callum"><div style="font-size:13px;font-weight:600">Callum</div><div style="font-size:11px;color:var(--text-muted)">Male &middot; conversational</div></div>
+      <div class="voice-opt" onclick="selVoice(this,'Charlotte')" data-v="Charlotte"><div style="font-size:13px;font-weight:600">Charlotte</div><div style="font-size:11px;color:var(--text-muted)">Female &middot; warm</div></div>
+      <div class="voice-opt" onclick="selVoice(this,'Brian')" data-v="Brian"><div style="font-size:13px;font-weight:600">Brian</div><div style="font-size:11px;color:var(--text-muted)">Male &middot; deep</div></div>
+      <div class="voice-opt" onclick="selVoice(this,'Alice')" data-v="Alice"><div style="font-size:13px;font-weight:600">Alice</div><div style="font-size:11px;color:var(--text-muted)">Female &middot; upbeat</div></div>
+    </div>
+    <div style="height:18px"></div>
+    <button class="btn btn-primary" style="width:100%;padding:12px;font-size:14px" onclick="saveKeys()">Save Settings</button>
+    <div style="text-align:center;margin-top:9px;font-size:12px;color:var(--text-muted)">Key saved in browser only.</div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo-wrap">
+      <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:-0.5px">INVICTA <span style="color:var(--blue-300)">FIN</span></div>
+      <div style="font-size:9px;color:var(--blue-600);text-transform:uppercase;letter-spacing:2px;margin-top:4px">Adviser Training Hub</div>
+    </div>
+    <div style="padding:6px 6px 0">
+      <div class="nav-group-label">Main</div>
+      <div class="nav-item active" onclick="showView('dashboard')"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
+      <div class="nav-item" onclick="showView('practice')"><i class="ti ti-microphone"></i>Practice</div>
+      <div class="nav-item" onclick="showView('tasks')"><i class="ti ti-list-check"></i>Tasks <span style="margin-left:auto;background:var(--danger);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700">3</span></div>
+      <div class="nav-item" onclick="showView('progress')"><i class="ti ti-chart-line"></i>Progress</div>
+      <div class="nav-item" onclick="showView('leaderboard')"><i class="ti ti-trophy"></i>Leaderboard</div>
+      <div class="nav-group-label">Management</div>
+      <div class="nav-item" onclick="showView('manager')"><i class="ti ti-users"></i>Team Overview</div>
+    </div>
+    <div class="sidebar-footer">
+      <div style="padding:0 0 10px">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--blue-600);margin-bottom:4px" id="xp-label">Trainee &#127919;</div>
+        <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div></div>
+        <div style="font-size:9px;color:var(--blue-700);margin-top:3px" id="xp-progress-text">0 XP</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:11px;color:var(--blue-500)" id="sidebar-voice-lbl">&#128266; Browser Voice</span>
+        <button onclick="document.getElementById('setup-overlay').classList.remove('hidden')" style="font-size:10px;color:var(--blue-600);background:none;border:none;cursor:pointer" title="Set up ElevenLabs TTS">Upgrade</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px 8px">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="av-circle" id="user-av">?</div>
+          <div>
+            <div style="font-size:13px;color:#fff;font-weight:500" id="user-name">&mdash;</div>
+            <div style="font-size:11px;color:var(--blue-600)" id="user-sub">Adviser</div>
+          </div>
+        </div>
+        <button onclick="document.getElementById('login-overlay').classList.remove('hidden')" style="font-size:10px;color:var(--blue-700);background:none;border:none;cursor:pointer;padding:2px 4px">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;color:var(--text-muted)" id="topbar-streak">&#128293; <strong>0</strong> day streak</span>
+        <button class="btn btn-primary" onclick="showView('practice')"><i class="ti ti-player-play" style="font-size:12px;margin-right:3px"></i>Start Session</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="content" id="view-dashboard">
+      <div style="margin-bottom:18px">
+        <div style="font-size:22px;font-weight:800" id="dashboard-greeting">Welcome!</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:3px" id="dashboard-sub">Start a session to track your progress.</div>
+      </div>
+      <div style="margin-bottom:16px;padding:13px 16px;background:var(--blue-50);border:1px solid var(--blue-100);border-radius:var(--radius);display:flex;align-items:flex-start;gap:11px">
+        <i class="ti ti-list-numbers" style="color:var(--blue-500);font-size:17px;margin-top:1px"></i>
+        <div><div style="font-size:13px;font-weight:700;color:var(--blue-700)">Framework: Acknowledge &rarr; Clarify &rarr; Bridge &rarr; Return to Script</div>
+        <div style="font-size:12px;color:var(--blue-500);margin-top:2px">Never get stuck on the objection. Answer it briefly, then get straight back into your process.</div></div>
+      </div>
+      <div class="grid4" style="margin-bottom:16px">
+        <div class="card card-sm card-accent-blue"><div class="stat-label">Overall Score</div><div class="stat-val" style="color:var(--blue-500)" id="stat-avg-score">&mdash;</div><div class="stat-sub" id="stat-avg-sub">No sessions yet</div></div>
+        <div class="card card-sm"><div class="stat-label">Sessions Done</div><div class="stat-val" id="stat-sessions">0</div><div class="stat-sub" id="stat-sessions-sub"></div></div>
+        <div class="card card-sm card-accent-green"><div class="stat-label">Best Score</div><div class="stat-val" style="color:var(--success)" id="stat-best-obj">&mdash;</div><div class="stat-sub" id="stat-best-sub">No data yet</div></div>
+        <div class="card card-sm card-accent-amber"><div class="stat-label">XP Level</div><div class="stat-val" style="color:var(--amber);font-size:19px;padding-top:4px" id="level-name">Trainee</div><div class="stat-sub" id="level-title-dash">Level 1 &#127919;</div><div class="progress-bar" style="margin-top:7px"><div class="pf" style="background:var(--amber);width:0%" id="level-bar-fill"></div></div><div style="font-size:10px;color:var(--text-muted);margin-top:3px" id="level-xp">0 XP</div></div>
+      </div>
+      <div style="margin-bottom:16px"><div class="card card-sm card-accent-red" id="streak-card"><div style="display:flex;align-items:center;gap:12px"><span style="font-size:30px">&#128293;</span><div><div class="stat-val" style="color:var(--danger)" id="stat-streak-val">0</div><div class="stat-sub">Day streak</div></div><div style="margin-left:auto;font-size:12px;color:var(--text-muted)" id="streak-msg">Practice today to start your streak!</div></div></div></div>
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="card"><div class="section-head">Scenario Performance</div><div id="skill-breakdown-list"><div style="font-size:12px;color:var(--text-muted)">Complete sessions to see your breakdown.</div></div></div>
+        <div class="card"><div class="section-head">Recent Activity</div><div id="recent-activity"><div style="font-size:13px;color:var(--text-muted)">No sessions yet &mdash; start a practice!</div></div></div>
+      </div>
+      <div class="card"><div class="section-head">Quick Practice</div><div class="grid3">
+        <div class="sc-card" onclick="startCall('quote')"><div class="sc-diff" style="color:var(--success)">Starter</div><div class="sc-title">&ldquo;I was just getting a quote&rdquo;</div><div class="sc-desc">Acknowledge &rarr; Bridge &rarr; Date of birth.</div><div class="fw-pill">ACK &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-quote-dash" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('notinterested')"><div class="sc-diff" style="color:var(--amber)">Medium</div><div class="sc-title">&ldquo;Not interested anymore&rdquo;</div><div class="sc-desc">Clarify what changed, broker position, back to fact find.</div><div class="fw-pill">CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-notinterested-dash" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('afford')"><div class="sc-diff" style="color:var(--danger)">Hard</div><div class="sc-title">&ldquo;I can&rsquo;t afford insurance&rdquo;</div><div class="sc-desc">Clarify cashflow vs value, structure around budget.</div><div class="fw-pill">CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-afford-dash" style="color:var(--text-muted)">Not yet attempted</div></div>
+      </div></div>
+    </div>
+
+    <!-- PRACTICE -->
+    <div class="content hidden" id="view-practice">
+      <div style="margin-bottom:16px;padding:12px 16px;background:var(--blue-50);border-radius:var(--radius);border:1px solid var(--blue-100);display:flex;align-items:flex-start;gap:11px">
+        <i class="ti ti-microphone" style="font-size:18px;color:var(--blue-500);margin-top:1px"></i>
+        <div><div style="font-size:13px;font-weight:700;color:var(--blue-700)">Speak naturally after the client finishes</div>
+        <div style="font-size:12px;color:var(--blue-500);margin-top:1px">Client lines taken from the Invicta Objection Handling Cheat Sheet. Scoring follows the 4-step framework. Requires Chrome or Edge.</div></div>
+      </div>
+      <div class="cat-head">Initial Contact Objections</div>
+      <div class="grid3" style="margin-bottom:4px">
+        <div class="sc-card" onclick="startCall('quote')"><div class="sc-diff" style="color:var(--success)">Starter</div><div class="sc-title">&ldquo;I was just getting a quote&rdquo;</div><div class="sc-desc">Acknowledge &rarr; Bridge (broker + providers + personal factors) &rarr; date of birth.</div><div class="fw-pill">ACK &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-quote" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('notinterested')"><div class="sc-diff" style="color:var(--amber)">Medium</div><div class="sc-title">&ldquo;Not interested anymore&rdquo;</div><div class="sc-desc">Clarify what changed &mdash; got cover or decided not to? Broker position. Fact find.</div><div class="fw-pill">CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-notinterested" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('sorted')"><div class="sc-diff" style="color:var(--amber)">Medium</div><div class="sc-title">&ldquo;I already sorted something&rdquo;</div><div class="sc-desc">Who, what cover, increasing premiums, why them. Find gaps.</div><div class="fw-pill">CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-sorted" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('dontremember')"><div class="sc-diff" style="color:var(--success)">Starter</div><div class="sc-title">&ldquo;I don&rsquo;t remember filling that out&rdquo;</div><div class="sc-desc">Acknowledge &rarr; explain online form &rarr; broker position &rarr; what cover in place.</div><div class="fw-pill">ACK &rarr; CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-dontremember" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('callback')"><div class="sc-diff" style="color:var(--danger)">Hard</div><div class="sc-title">&ldquo;Can you call me back later?&rdquo;</div><div class="sc-desc">Acknowledge &rarr; bridge to keep them now &rarr; or lock in a specific time.</div><div class="fw-pill">ACK &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-callback" style="color:var(--text-muted)">Not yet attempted</div></div>
+      </div>
+      <div class="cat-head">Older Lead Objections (3&ndash;4 months)</div>
+      <div class="grid3" style="margin-bottom:4px">
+        <div class="sc-card" onclick="startCall('agesago')"><div class="sc-diff" style="color:var(--amber)">Medium</div><div class="sc-title">&ldquo;That was ages ago, not interested&rdquo;</div><div class="sc-desc">Clarify &mdash; sorted or didn&rsquo;t go ahead? Broker position. Back to script.</div><div class="fw-pill">CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-agesago" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('justlooking')"><div class="sc-diff" style="color:var(--success)">Starter</div><div class="sc-title">&ldquo;I was just looking&rdquo;</div><div class="sc-desc">Acknowledge &rarr; clarify type of cover &rarr; huge differences between providers.</div><div class="fw-pill">ACK &rarr; CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-justlooking" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('scam')"><div class="sc-diff" style="color:var(--amber)">Medium</div><div class="sc-title">&ldquo;Is this a scam?&rdquo; / &ldquo;Don&rsquo;t trust you&rdquo;</div><div class="sc-desc">Acknowledge fair &rarr; clarify what happened &rarr; licensed broker position.</div><div class="fw-pill">ACK &rarr; CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-scam" style="color:var(--text-muted)">Not yet attempted</div></div>
+      </div>
+      <div class="cat-head">Cost Objections</div>
+      <div class="grid3" style="margin-bottom:4px">
+        <div class="sc-card" onclick="startCall('afford')"><div class="sc-diff" style="color:var(--danger)">Hard</div><div class="sc-title">&ldquo;I can&rsquo;t afford insurance&rdquo;</div><div class="sc-desc">Clarify cashflow vs value. Not one-size-fits-all. Structure around budget.</div><div class="fw-pill">CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-afford" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('workcover')"><div class="sc-diff" style="color:var(--amber)">Medium</div><div class="sc-title">&ldquo;I have insurance through work&rdquo;</div><div class="sc-desc">How much cover? Great foundation &mdash; but ends when you leave employer.</div><div class="fw-pill">CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-workcover" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('online')"><div class="sc-diff" style="color:var(--success)">Starter</div><div class="sc-title">&ldquo;Why more expensive than online?&rdquo;</div><div class="sc-desc">Good question &rarr; online quotes are ideal-scenario only &rarr; real pricing.</div><div class="fw-pill">ACK &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-online" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('hiddenfees')"><div class="sc-diff" style="color:var(--success)">Starter</div><div class="sc-title">&ldquo;Are there any hidden fees?&rdquo;</div><div class="sc-desc">No, none at all &rarr; paid by providers &rarr; free for clients &rarr; what made them look.</div><div class="fw-pill">ACK &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-hiddenfees" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('onlinequote')"><div class="sc-diff" style="color:var(--success)">Starter</div><div class="sc-title">&ldquo;I thought I&rsquo;d just get a quote online&rdquo;</div><div class="sc-desc">Fair, most think like car insurance &rarr; life insurance is personalised &rarr; DOB.</div><div class="fw-pill">ACK &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-onlinequote" style="color:var(--text-muted)">Not yet attempted</div></div>
+      </div>
+      <div class="cat-head">Financial Planning &amp; Referral</div>
+      <div class="grid3">
+        <div class="sc-card" onclick="startCall('kiwisaver')"><div class="sc-diff" style="color:var(--amber)">Medium</div><div class="sc-title">KiwiSaver Switch</div><div class="sc-desc">Clarify current provider and fund type. Bridge on fee/return differences over 20-30 years. Get date of birth.</div><div class="fw-pill">CLARIFY &rarr; BRIDGE &rarr; SWITCH</div><div class="sc-pb" id="pb-kiwisaver" style="color:var(--text-muted)">Not yet attempted</div></div>
+        <div class="sc-card" onclick="startCall('mortgage')"><div class="sc-diff" style="color:var(--success)">Easy</div><div class="sc-title">Mortgage Referral</div><div class="sc-desc">New homeowner mentions buying a house. Acknowledge milestone. Bridge to Invicta mortgage division.</div><div class="fw-pill">ACK &rarr; CLARIFY &rarr; BRIDGE &rarr; HANDOFF</div><div class="sc-pb" id="pb-mortgage" style="color:var(--text-muted)">Not yet attempted</div></div>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="content hidden" id="view-tasks">
+      <div class="grid2">
+        <div class="card"><div class="section-head">Active Tasks <span class="badge badge-red" style="margin-left:8px">3 due</span></div>
+          <div class="task-row"><div class="t-icon" style="background:#FEE2E2;color:var(--danger)"><i class="ti ti-flame"></i></div><div style="flex:1"><div style="font-size:13px;font-weight:600">Practice &ldquo;Can&rsquo;t afford it&rdquo; &times;3</div><div style="font-size:11px;color:var(--danger)">Due today &middot; Auto-assigned &middot; Score 38</div></div><button class="btn btn-primary" style="font-size:12px;padding:5px 10px;margin-left:10px" onclick="startCall('afford')">Start</button></div>
+          <div class="task-row"><div class="t-icon" style="background:#FFF8E6;color:var(--amber)"><i class="ti ti-book"></i></div><div style="flex:1"><div style="font-size:13px;font-weight:600">Practice &ldquo;Already sorted&rdquo; &times;2</div><div style="font-size:11px;color:var(--amber)">Due tomorrow &middot; Manager assigned</div></div><button class="btn" style="font-size:12px;padding:5px 10px;margin-left:10px" onclick="startCall('sorted')">Start</button></div>
+          <div class="task-row"><div class="t-icon" style="background:var(--blue-100);color:var(--blue-600)"><i class="ti ti-microphone"></i></div><div style="flex:1"><div style="font-size:13px;font-weight:600">Full first meeting run-through</div><div style="font-size:11px;color:var(--text-muted)">Due Friday &middot; Target 70+</div></div><button class="btn btn-dark" style="font-size:12px;padding:5px 10px;margin-left:10px" onclick="startCall('quote')">Start</button></div>
+        </div>
+        <div class="card"><div class="section-head">Completed This Week</div>
+          <div class="task-row"><div class="t-icon" style="background:#D1FAE5;color:#065F46"><i class="ti ti-check"></i></div><div><div style="font-size:13px;font-weight:600">Opening script &times;5</div><div style="font-size:11px;color:var(--success)">&#10003; Mon &middot; Avg 64</div></div></div>
+          <div class="task-row"><div class="t-icon" style="background:#D1FAE5;color:#065F46"><i class="ti ti-check"></i></div><div><div style="font-size:13px;font-weight:600">&ldquo;Not interested&rdquo; &times;3</div><div style="font-size:11px;color:var(--success)">&#10003; Wed &middot; Avg 68</div></div></div>
+          <div class="task-row"><div class="t-icon" style="background:#D1FAE5;color:#065F46"><i class="ti ti-check"></i></div><div><div style="font-size:13px;font-weight:600">&ldquo;Just a quote&rdquo; &times;2</div><div style="font-size:11px;color:var(--success)">&#10003; Thu &middot; Avg 71</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="content hidden" id="view-progress">
+      <div id="progress-stats"></div>
+      <div class="grid2">
+        <div class="card"><div class="section-head">Score Over Time</div><div id="progress-weeks"><div style="font-size:12px;color:var(--text-muted)">Complete sessions to see trends.</div></div></div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="section-head" style="margin-bottom:0">Session History</div>
+            <button class="btn" style="font-size:11px;padding:4px 10px;color:var(--danger);border-color:var(--danger)" onclick="clearMyHistory()">Clear my history</button>
+          </div>
+          <table class="mtable"><thead><tr><th>Date</th><th>Scenario</th><th>Score</th><th>Duration</th><th>XP</th></tr></thead>
+          <tbody id="progress-tbody"><tr><td colspan="5" style="color:var(--text-muted);text-align:center;padding:16px">No sessions yet</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="content hidden" id="view-leaderboard">
+      <div id="leaderboard-podium"></div>
+      <div class="card" style="margin-top:16px">
+        <div class="section-head">Full Rankings</div>
+        <table class="mtable"><thead><tr><th>#</th><th>Adviser</th><th>Level</th><th>Sessions</th><th>Avg Score</th><th>Best</th><th>Streak</th></tr></thead>
+        <tbody id="leaderboard-tbody"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">Complete sessions to appear on the leaderboard</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- MANAGER -->
+    <div class="content hidden" id="view-manager">
+      <div class="grid4" style="margin-bottom:16px">
+        <div class="card card-sm card-accent-blue"><div class="stat-label">Team Avg Score</div><div class="stat-val" style="color:var(--blue-500)" id="mgr-team-avg">&mdash;</div><div class="stat-sub">All sessions</div></div>
+        <div class="card card-sm"><div class="stat-label">Active Advisers</div><div class="stat-val" id="mgr-active">0</div><div class="stat-sub">In history</div></div>
+        <div class="card card-sm"><div class="stat-label">Sessions (7d)</div><div class="stat-val" id="mgr-sessions">0</div><div class="stat-sub">Last 7 days</div></div>
+        <div class="card card-sm card-accent-red"><div class="stat-label">Need Attention</div><div class="stat-val" style="color:var(--danger)" id="mgr-attention">0</div><div class="stat-sub">Avg below 40</div></div>
+      </div>
+      <div id="manager-cards"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CALL SCREEN -->
+<div class="call-screen hidden" id="call-screen">
+  <div style="text-align:center">
+    <div class="call-pill" id="call-pill">INITIAL CONTACT</div>
+    <div class="call-name" id="call-name">Sarah</div>
+    <div class="call-timer" id="call-timer">0:00</div>
+  </div>
+  <div class="call-mid">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+      <div class="av-wrap">
+        <div class="av-ring r3" id="ring3"></div><div class="av-ring r2" id="ring2"></div><div class="av-ring r1" id="ring1"></div>
+        <div class="av-core"><div class="av-init" id="av-init">S</div></div>
+      </div>
+      <div class="pers-tag" id="pers-tag"></div>
+      <div class="tts-badge" id="tts-badge">&#128266; Browser TTS</div>
+    </div>
+    <div class="step-track" id="step-track">
+      <div class="step-box" id="sb0"><div class="sn">Step 1</div><div class="sl" id="sl0">Acknowledge</div></div>
+      <div class="step-box" id="sb1"><div class="sn">Step 2</div><div class="sl" id="sl1">Clarify</div></div>
+      <div class="step-box" id="sb2"><div class="sn">Step 3</div><div class="sl" id="sl2">Bridge</div></div>
+      <div class="step-box" id="sb3"><div class="sn">Step 4</div><div class="sl" id="sl3">Return to Script</div></div>
+    </div>
+    <div class="call-status" id="call-status">Connecting...</div>
+    <div class="wave-row" id="wave-row"><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div></div>
+    <div class="hint-bar" id="hint-bar">
+      <div class="hint-step" id="hint-step">Acknowledge</div>
+      <div class="hint-text" id="hint-text"></div>
+      <div class="hint-script" id="hint-script"></div>
+    </div>
+    <div class="tx-box" id="tx-box"><div class="tl" style="color:rgba(255,255,255,0.18);font-size:12px;text-align:center" id="tx-ph">Transcript will appear here</div></div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div class="mic-wrap">
+      <div class="mic-ring muted" id="mic-ring"><i class="ti ti-microphone"></i></div>
+      <div class="mic-lbl" id="mic-lbl">Waiting...</div>
+    </div>
+    <div class="call-action-row">
+      <button class="call-icon-btn" id="mute-btn" onclick="toggleMute()" title="Mute mic"><i class="ti ti-volume"></i></button>
+      <button class="end-btn" onclick="endCall()"><i class="ti ti-phone-off"></i></button>
+      <button class="call-icon-btn" onclick="advanceTurn()" title="Skip to next client line"><i class="ti ti-player-skip-forward"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- SCORE SCREEN -->
+<div class="score-overlay hidden" id="score-screen">
+  <div class="score-card">
+    <div class="score-hero">
+      <div class="score-ring"><div class="score-num" id="final-score">&mdash;</div></div>
+      <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:4px" id="score-grade">Session complete</div>
+      <div style="font-size:12px;color:var(--blue-400)" id="score-sub">&mdash;</div>
+      <div style="margin-top:10px"><span class="xp-badge hidden" id="xp-earned-badge">+35 XP &#9889;</span></div>
+    </div>
+    <div class="score-body">
+      <div class="sub-scores">
+        <div class="ss"><div class="ss-lbl">Acknowledge</div><div class="ss-val" id="ss0">&mdash;</div></div>
+        <div class="ss"><div class="ss-lbl">Clarify</div><div class="ss-val" id="ss1">&mdash;</div></div>
+        <div class="ss"><div class="ss-lbl">Bridge</div><div class="ss-val" id="ss2">&mdash;</div></div>
+        <div class="ss"><div class="ss-lbl">Return to Script</div><div class="ss-val" id="ss3">&mdash;</div></div>
+      </div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:9px">Checkpoint Breakdown</div>
+      <div id="score-breakdown" style="margin-bottom:16px"></div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:9px">What to Fix</div>
+      <div id="fb-list"></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;margin-top:14px">
+        <button class="btn" style="flex:1" id="share-btn" onclick="shareResult()"><i class="ti ti-share" style="font-size:12px;margin-right:4px"></i>Share Result</button>
+        <button class="btn" style="flex:1" id="ai-debrief-btn" onclick="requestAIDebrief()"><i class="ti ti-robot" style="font-size:12px;margin-right:4px"></i>AI Debrief</button>
+      </div>
+      <div class="debrief-panel hidden" id="debrief-panel"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary" style="flex:1" onclick="retrySession()">Try Again</button>
+        <button class="btn btn-dark" style="flex:1" onclick="closeScore()">Back to Dashboard</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEVEL UP OVERLAY -->
+<div class="levelup-overlay hidden" id="levelup-overlay">
+  <div class="lu-card">
+    <div class="lu-glow"></div>
+    <div style="font-size:52px;margin-bottom:8px" id="lu-emoji">&#11088;</div>
+    <div style="font-size:26px;font-weight:900;color:var(--amber);letter-spacing:1px">LEVEL UP!</div>
+    <div style="font-size:20px;font-weight:800;color:#fff;margin-top:8px" id="lu-level">Developing</div>
+    <div style="font-size:14px;color:var(--blue-300);margin-top:4px" id="lu-title">Level 2</div>
+    <button class="btn btn-primary" style="margin-top:22px;min-width:130px" onclick="document.getElementById('levelup-overlay').classList.add('hidden')">Keep Going!</button>
+  </div>
+</div>
+
+<script>
+// ── PROFILE ───────────────────────────────────────────────────────────────
+let SEL_ROLE='adviser';
+function selRole(el,r){document.querySelectorAll('.role-opt-lg').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');SEL_ROLE=r;}
+function getInitials(name){return name.trim().split(/\s+/).map(n=>n[0]).join('').slice(0,2).toUpperCase();}
+function saveProfile(){
+  const name=document.getElementById('input-name').value.trim();
+  if(!name){alert('Please enter your name.');return;}
+  localStorage.setItem('inv_name',name);localStorage.setItem('inv_role',SEL_ROLE);
+  document.getElementById('login-overlay').classList.add('hidden');
+  addRecentProfile(name);
+  updateProfile();
+  renderDashboard();
+}
+function updateProfile(){
+  const name=localStorage.getItem('inv_name')||'';
+  const role=localStorage.getItem('inv_role')||'adviser';
+  if(!name)return;
+  document.getElementById('user-name').textContent=name;
+  document.getElementById('user-sub').textContent=role==='manager'?'Manager':'Adviser';
+  document.getElementById('user-av').textContent=getInitials(name);
+  document.getElementById('input-name').value=name;
+  document.querySelectorAll('.role-opt-lg').forEach(o=>o.classList.toggle('sel',o.dataset.r===role));
+  SEL_ROLE=role;
+  updateSidebarXP();
+}
+function addRecentProfile(name){
+  let p=JSON.parse(localStorage.getItem('inv_recent_profiles')||'[]');
+  p=p.filter(x=>x!==name);p.unshift(name);
+  if(p.length>6)p=p.slice(0,6);
+  localStorage.setItem('inv_recent_profiles',JSON.stringify(p));
+}
+function loadRecentProfiles(){
+  const p=JSON.parse(localStorage.getItem('inv_recent_profiles')||'[]');
+  const wrap=document.getElementById('recent-profiles-wrap');
+  const list=document.getElementById('recent-profiles-list');
+  if(p.length>0){
+    wrap.style.display='';
+    list.innerHTML=p.map(n=>`<div class="profile-chip" onclick="document.getElementById('input-name').value='${n.replace(/'/g,"\\'")};'">${n}</div>`).join('');
+  }
+}
+
+// ── CONFIG ────────────────────────────────────────────────────────────────
+let EL_KEY='', SEL_VOICE='Callum';
+const VOICE_IDS={Callum:'N2lVS1w4EtoT3dr4eOWO',Charlotte:'XB0fDUnXU5powFXDhCwa',Brian:'nPczCjzI2devNBz1zQrb',Alice:'Xb7hH8MSUJpSbSDYk0k2'};
+const PERS=[
+  {tag:'quietly spoken, a bit reserved',s:0.72,y:0.10},
+  {tag:'calm and laid-back',s:0.62,y:0.18},
+  {tag:'friendly and chatty',s:0.50,y:0.40},
+  {tag:'a bit distracted, busy-sounding',s:0.55,y:0.20},
+  {tag:'upbeat and fairly direct',s:0.45,y:0.48},
+  {tag:'busy and a bit abrupt',s:0.38,y:0.28},
+  {tag:'confident, straight-up',s:0.48,y:0.44},
+  {tag:'friendly but sceptical',s:0.52,y:0.35}
+];
+function saveKeys(){
+  EL_KEY=document.getElementById('input-el').value.trim();
+  if(EL_KEY)localStorage.setItem('inv_el',EL_KEY);
+  SEL_VOICE=document.querySelector('.voice-opt.sel')?.dataset.v||'Callum';
+  localStorage.setItem('inv_voice',SEL_VOICE);
+  document.getElementById('setup-overlay').classList.add('hidden');
+  document.getElementById('sidebar-voice-lbl').textContent=EL_KEY?'🎙 ElevenLabs · '+SEL_VOICE:'🔊 Browser Voice';
+  document.getElementById('tts-badge').textContent=EL_KEY?'🎙 ElevenLabs · '+SEL_VOICE:'🔊 Browser TTS';
+}
+function selVoice(el,v){document.querySelectorAll('.voice-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');SEL_VOICE=v;}
+
+// ── XP & LEVELS ───────────────────────────────────────────────────────────
+const LEVELS=[
+  {min:0,max:199,name:'Trainee',emoji:'🎯',level:1},
+  {min:200,max:499,name:'Developing',emoji:'📈',level:2},
+  {min:500,max:999,name:'Practitioner',emoji:'⚡',level:3},
+  {min:1000,max:1999,name:'Senior',emoji:'🏆',level:4},
+  {min:2000,max:Infinity,name:'Elite',emoji:'🌟',level:5}
+];
+function getLevelInfo(xp){
+  for(let l of LEVELS) if(xp>=l.min&&xp<=l.max) return l;
+  return LEVELS[LEVELS.length-1];
+}
+function getXPKey(name){return 'invicta_xp_'+name.toLowerCase().replace(/\s+/g,'_');}
+function calcXP(score){return score>=80?100:score>=65?75:score>=45?40:10;}
+function addXP(name,earned){
+  const key=getXPKey(name);
+  let xp=parseInt(localStorage.getItem(key)||'0');
+  const before=getLevelInfo(xp);
+  xp+=earned;
+  localStorage.setItem(key,xp);
+  const after=getLevelInfo(xp);
+  return {xp,leveledUp:after.level>before.level,newLevel:after};
+}
+function updateSidebarXP(){
+  const name=localStorage.getItem('inv_name')||'';
+  if(!name)return;
+  const xp=parseInt(localStorage.getItem(getXPKey(name))||'0');
+  const info=getLevelInfo(xp);
+  const min=info.min,max=info.max===Infinity?xp+200:info.max;
+  const fill=max>min?Math.min(Math.round((xp-min)/(max-min)*100),100):100;
+  document.getElementById('xp-label').textContent=info.emoji+' '+info.name;
+  document.getElementById('xp-bar-fill').style.width=fill+'%';
+  document.getElementById('xp-progress-text').textContent=xp+' XP'+(info.max!==Infinity?' · '+info.max+' to next':'');
+}
+
+// ── STREAK ────────────────────────────────────────────────────────────────
+function getStreakKey(name){return 'invicta_streak_'+name.toLowerCase().replace(/\s+/g,'_');}
+function updateStreak(name){
+  const key=getStreakKey(name);
+  const today=new Date().toISOString().slice(0,10);
+  let data=JSON.parse(localStorage.getItem(key)||'{"streak":0,"lastDate":""}');
+  if(data.lastDate===today)return data.streak;
+  const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  data.streak=(data.lastDate===yest)?data.streak+1:1;
+  data.lastDate=today;
+  localStorage.setItem(key,JSON.stringify(data));
+  return data.streak;
+}
+function getStreak(name){
+  return JSON.parse(localStorage.getItem(getStreakKey(name))||'{"streak":0}').streak;
+}
+
+// ── HISTORY ───────────────────────────────────────────────────────────────
+function saveSession(entry){
+  let h=JSON.parse(localStorage.getItem('invicta_history')||'[]');
+  h.unshift(entry);
+  if(h.length>100)h=h.slice(0,100);
+  localStorage.setItem('invicta_history',JSON.stringify(h));
+}
+function getAdviserHistory(name){
+  return JSON.parse(localStorage.getItem('invicta_history')||'[]').filter(h=>h.adviserName===name);
+}
+function formatDate(iso){
+  const d=new Date(iso);
+  const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const h=d.getHours(),m=d.getMinutes(),ap=h>=12?'pm':'am';
+  return d.getDate()+' '+mo[d.getMonth()]+', '+(h%12||12)+':'+(m<10?'0':'')+m+ap;
+}
+function clearMyHistory(){
+  const name=localStorage.getItem('inv_name')||'';
+  if(!name)return;
+  if(!confirm('Clear all your session history? This cannot be undone.'))return;
+  let h=JSON.parse(localStorage.getItem('invicta_history')||'[]');
+  h=h.filter(x=>x.adviserName!==name);
+  localStorage.setItem('invicta_history',JSON.stringify(h));
+  renderProgress();
+  renderDashboard();
+}
+
+// ── SCENARIOS ─────────────────────────────────────────────────────────────
+const SC={
+  quote:       {title:'Just Getting a Quote',         pill:'INITIAL CONTACT',   names:['Sarah','Aroha','Jess','Ngaio','Tegan','Mel'],    dlg:'quote',        fw:['Acknowledge','Bridge','Return to Script']},
+  notinterested:{title:'Not Interested Anymore',      pill:'INITIAL CONTACT',   names:['David','Tama','Craig','Bevan','Liam','Jayden'],  dlg:'notinterested',fw:['Clarify','Bridge','Return to Script']},
+  sorted:      {title:'Already Sorted Something',     pill:'INITIAL CONTACT',   names:['Kate','Renee','Steph','Lisa','Jo','Bree'],       dlg:'sorted',       fw:['Clarify','Bridge','Return to Script']},
+  dontremember:{title:"Don't Remember Signing Up",    pill:'INITIAL CONTACT',   names:['Mark','Glen','Wayne','Brad','Dion','Shane'],     dlg:'dontremember', fw:['Acknowledge','Clarify','Bridge','Return to Script']},
+  callback:    {title:'Call Me Back Later',            pill:'INITIAL CONTACT',   names:['Mike','Brendon','Kurt','Troy','Mitch','Craig'],  dlg:'callback',     fw:['Acknowledge','Bridge','Return to Script']},
+  agesago:     {title:'That Was Ages Ago',             pill:'OLDER LEAD',        names:['Diane','Cheryl','Lyn','Robyn','Pam','Donna'],    dlg:'agesago',      fw:['Clarify','Bridge','Return to Script']},
+  justlooking: {title:'I Was Just Looking',            pill:'OLDER LEAD',        names:['Ryan','Jake','Caleb','Josh','Finn','Luca'],      dlg:'justlooking',  fw:['Acknowledge','Clarify','Bridge','Return to Script']},
+  scam:        {title:'Is This a Scam?',               pill:'TRUST OBJECTION',   names:['Rachel','Kim','Amy','Natasha','Pip','Cath'],     dlg:'scam',         fw:['Acknowledge','Clarify','Bridge','Return to Script']},
+  afford:      {title:"Can't Afford Insurance",        pill:'COST OBJECTION',    names:['Emma','Tracey','Nicole','Brooke','Tara','Chloe'],dlg:'afford',       fw:['Clarify','Bridge','Return to Script']},
+  workcover:   {title:'Insurance Through Work',        pill:'COST OBJECTION',    names:['James','Simon','Phil','Aaron','Grant','Tim'],    dlg:'workcover',    fw:['Clarify','Bridge','Return to Script']},
+  online:      {title:'More Expensive Than Online',    pill:'COST OBJECTION',    names:['Lucy','Pip','Fiona','Harriet','Zoe','Alice'],    dlg:'online',       fw:['Acknowledge','Bridge','Return to Script']},
+  hiddenfees:  {title:'Hidden Fees Question',          pill:'COST OBJECTION',    names:['Sam','Chris','Alex','Jordan','Jamie','Casey'],   dlg:'hiddenfees',   fw:['Acknowledge','Bridge','Return to Script']},
+  onlinequote: {title:'Thought Would Get Quote Online',pill:'ONLINE EXPECTATION',names:['Jess','Mel','Tegan','Aroha','Ngaio','Sarah'],   dlg:'onlinequote',  fw:['Acknowledge','Bridge','Return to Script']},
+  kiwisaver:   {title:'KiwiSaver Switch',              pill:'KIWISAVER',         names:['Aroha','Liam','Priya','James','Mei','Hannah'],   dlg:'kiwisaver',    fw:['Clarify','Bridge','Switch']},
+  mortgage:    {title:'Mortgage Referral',             pill:'MORTGAGE REFERRAL', names:['Sam','Claire','Daniel','Tara','Josh','Luke'],    dlg:'mortgage',     fw:['Acknowledge','Clarify','Bridge','Handoff']}
+};
+
+// ── DIALOGUE ──────────────────────────────────────────────────────────────
+const DLG={
+  quote:{
+    openers:["Oh hi — I thought I was just going to get a quote online, I wasn't really expecting a call.","Hi — yeah I just filled something out, I didn't think someone would actually ring.","Hello? Yeah look, I kind of just wanted a price — I wasn't expecting this.","Hi — I was just after a quote to be honest, I didn't think there'd be a whole phone call."],
+    turns:[
+      {client:["Yeah I just wanted a quick price online, I didn't want a phone call.","I just wanted to see what it would cost me, that's all.","I was just after a rough number. Is that not something you can do?","I wasn't really looking for a conversation — just a price."],hint:"ACKNOWLEDGE — validate it, don't apologise.",script:'"That\'s fair. Look, if I could give you a quote straight away, I would — it would save me a lot of time as well."',good_kw:['fair','makes sense','save','straight away','time as well','totally','i get that','understand','know what you mean'],soften:["Oh right, yeah okay. Fair enough.","That does make sense actually.","Okay, I can see where you're coming from.","Fair enough, yeah."],resist:["Can't you just give me a rough number though?","I still don't see why I need to have a full call.","Seems like a lot of effort just to get a price."]},
+      {client:["So why does it need to be a phone call?","Why can't you just automate it like car insurance?","What's the reason I can't just get a price online?","Other insurance companies can do it online, why can't you?"],hint:"BRIDGE — broker, multiple providers, not one-size-fits-all, personal factors.",script:'"I work as a broker and we work with multiple providers — Partners Life, AIA, Chubb and NIB. There isn\'t one provider that\'s best for everyone. It comes down to things like your age, occupation, smoking status, health history and even hobbies."',good_kw:['broker','multiple providers','partners','aia','chubb','nib','not one','age','occupation','smoking','health','hobbies','situation','favourable','personalised'],soften:["Oh okay, so it's not one-size-fits-all.","Right, so it actually depends on your circumstances.","I didn't realise there were that many factors.","Fair enough, that makes sense."],resist:["I still think it should be simpler.","Can you just give me a ballpark?","I might just look at it another time."]},
+      {client:["Alright, so what do you need from me?","Okay, so how do we do this then?","Fine. How long will this take?","Right, okay — what do you need?"],hint:"RETURN TO SCRIPT — 5 minutes, then date of birth.",script:'"So with that in mind, do you have 5 minutes now? First things first — what was your date of birth?"',good_kw:['five minutes','5 minutes','date of birth','dob','how old','born','first things first','quick','few minutes'],soften:["Yeah five minutes is fine. Date of birth — fourteenth of March eighty-four.","Sure, five minutes. DOB is second of July eighty-nine.","Okay yeah. Born third of November eighty-six.","Yep, five minutes. It's the twenty-second of January eighty-eight."],resist:["I don't really have five minutes right now.","Can we do this another time?","I'll think about it."]}
+    ]
+  },
+  notinterested:{
+    openers:["Oh hi — yeah look, I'm not really interested anymore to be honest.","Hi — nah I've gone off the idea, I don't think I need this.","Yeah look, I filled that out a while ago but I'm not keen anymore.","Hi — look I've kind of moved on from this, I don't think it's for me."],
+    turns:[
+      {client:["I just decided it wasn't for me.","Things have changed since then.","It's just not a priority anymore.","I don't really need it right now."],hint:"CLARIFY — no worries, ask what changed. Did they sort something or decide not to go ahead?",script:'"No worries. Can I ask what changed? Did you end up sorting something out or did you decide not to go ahead?"',good_kw:['what changed','sort something','did you sort','go ahead','decide not','end up','what happened','moved on'],soften:["Oh — no I didn't sort anything, I just kind of forgot.","I've got something through work actually.","Nah, I didn't end up doing anything about it.","No, nothing happened — just lost interest."],resist:["I just don't want it.","It's not something I'm interested in.","I'd rather not get into it."]},
+      {client:["I didn't end up sorting anything.","I've got work cover so I figured that's enough.","It was just the cost put me off.","I just decided it wasn't worth it."],hint:"BRIDGE — broker position. Compare multiple providers, clients surprised by pricing and quality differences.",script:'"That\'s fair. To give you some context, I work as a broker — rather than looking at one provider, I compare multiple providers to make sure clients aren\'t paying more than they need to or missing out on benefits."',good_kw:['broker','compare','multiple providers','paying more','missing out','pricing','quality','vary','market','surprised'],soften:["Oh right, I didn't know there was that much variation.","Okay, I hadn't really thought about comparing them.","I suppose I don't really know much about it.","Fair point — I'd only looked at one place."],resist:["I still don't think I need it.","Can you send me something instead?","I'll think about it another time."]},
+      {client:["Alright, I suppose I could have a quick look.","Okay fine, but keep it quick.","Go on then, what do you need?","I guess a quick look wouldn't hurt."],hint:"RETURN TO SCRIPT — ask for date of birth or current occupation.",script:'"Let\'s have a quick look and see whether anything has changed. What\'s your date of birth?"',good_kw:['date of birth','dob','what do you do','work','occupation','currently doing','for work','quick questions','quick look','worth comparing'],soften:["Yeah alright. Date of birth — third of August eighty-eight.","Sure, I work in construction, been doing it about eight years.","Fine, I'm a secondary school teacher.","Okay. I run my own landscaping business."],resist:["I'd need to think about it.","Can you email me something?","I'll come back to it."]}
+    ]
+  },
+  sorted:{
+    openers:["Hi — yeah I've actually already sorted insurance, so I think I'm all good.","Oh hi — I've already got cover sorted so I don't really need anything.","Yeah nah, I ended up organising something myself.","Hi — I went ahead and got cover actually, so I should be fine."],
+    turns:[
+      {client:["Yeah I just sorted it myself.","I went through the bank — it was just easier.","I ended up going direct to AIA.","My mortgage broker sorted it for me."],hint:"CLARIFY — who they went with, what cover, increasing each year, why they chose them.",script:'"Perfect. Who did you end up going with? What cover did you put in place? Was that increasing each year? What made you choose them?"',good_kw:['who did','which provider','who are you with','what cover','what type','increasing','premiums','each year','what made you','why them','why did'],soften:["Yeah I went with ANZ — just bundled it with the mortgage.","AIA actually. A friend recommended them.","Westpac sorted it. Just easiest at the time.","I honestly don't know — my partner dealt with it."],resist:["I'm happy with what I've got.","I don't really need to change anything.","It's all sorted, I'm not looking."]},
+      {client:["I think it's all fine.","I trust who I went with.","It was recommended so I'm not too worried.","I haven't had any issues with it."],hint:"BRIDGE — nice work getting something sorted, but people often pay more or have gaps from only looking at one option.",script:'"Nice work getting something sorted. What I often find though is people either end up paying more than they need to or they have gaps in cover because they only looked at one option."',good_kw:['paying more','gaps','one option','only one','compare','multiple providers','peace of mind','everything available','nice work'],soften:["Oh — I hadn't thought about gaps.","I suppose I only looked at one place.","Hm, fair enough. It wouldn't hurt to check.","I didn't realise there could be gaps."],resist:["I think it's fine.","I'm not looking to change it.","I'll leave it as it is."]},
+      {client:["Alright, I suppose it's worth a look.","Okay, what do you need?","Go on then.","Fine, what would you need from me?"],hint:"RETURN TO SCRIPT — ask what they currently do for work.",script:'"Let me ask you a couple of quick questions and I\'ll see whether it\'s worth comparing. What do you currently do for work?"',good_kw:['what do you do','work','occupation','for work','currently do','quick questions','worth comparing','have a look'],soften:["Sure — I'm in IT.","I work in retail management.","I'm a nurse at Christchurch Hospital.","I run my own plumbing business."],resist:["I don't want to go through all that.","I'll think about it.","Not right now thanks."]}
+    ]
+  },
+  dontremember:{
+    openers:["I don't actually remember filling anything out — I'm not sure this is right.","I don't think I signed up for anything? I don't remember doing this.","I'm not sure that was me to be honest. I don't remember that.","I don't recall giving anyone my details for insurance."],
+    turns:[
+      {client:["I seriously don't remember doing it.","When would I have done that?","I really don't think that was me.","I don't recall signing up for anything."],hint:"ACKNOWLEDGE — that's alright, it was probably a while ago.",script:'"That\'s alright. It was probably a little while ago."',good_kw:['alright','while ago','probably','okay','no worries','not a problem','some time ago','totally fine'],soften:["Oh right, okay. Fair enough.","Yeah I guess it might have been a while back.","Okay, that's fair.","Right."],resist:["I definitely didn't sign up.","Someone must have used my details.","I'm not sure this is right."]},
+      {client:["So what did I apparently fill out?","Where would I have done that?","What form are you talking about?","I still don't think that was me."],hint:"CLARIFY — explain the online form through social media or the internet.",script:'"You would have filled out an online form through social media or on the internet, requesting to review your insurance or look at new options like life insurance."',good_kw:['online form','social media','internet','filled out','online','form','website','ad','requested','life insurance'],soften:["Oh — yeah actually, I do click on those kinds of things sometimes.","Right, yeah — I might have done something like that.","Okay, that does ring a bell actually.","Oh yeah, maybe. I can't always remember what I click on."],resist:["I still don't remember doing that.","That really doesn't sound like me.","I'm suspicious about how you got my details."]},
+      {client:["Okay, I might have done it I suppose.","Alright, maybe that was me.","So what is it you do?","Right, okay. What do you need?"],hint:"BRIDGE then RETURN TO SCRIPT — 'I saw your request come through.' Then ask what cover they currently have.",script:'"I saw your request come through. I should probably ask — what cover do you currently have in place?"',good_kw:['saw your request','request come through','what cover','currently have','in place','existing','have anything','current policy'],soften:["Nothing really — I haven't sorted anything.","I've got a work policy but that's it.","Nothing formal, just what comes with work.","I honestly don't know what I've got."],resist:["I'm still not sure about this.","Can you send me something first?","I'd want to verify who you are."]}
+    ]
+  },
+  callback:{
+    openers:["Hi — look, can you call me back? Really not a good time.","Oh hi — this is a bit of a bad time, can we do this later?","Yeah hi — I'm pretty flat tack right now, can you ring back?","Look I'm in the middle of something — is there any chance you can call me back?"],
+    turns:[
+      {client:["I'm seriously busy right now.","Yeah just not a great time eh.","I've got a lot on today.","I'm literally about to go into a meeting."],hint:"ACKNOWLEDGE then BRIDGE — no problem, but it's just a quick chat. Try to keep them now.",script:'"No problem, I can do that. To be honest, it\'s just a quick chat and I won\'t be able to help unless I have some information about what you\'re trying to achieve. It will only take a couple of minutes if you had time now."',good_kw:['couple of minutes','couple minutes','quick chat','right now','time now','brief','only take','few minutes','two minutes','multiple providers'],soften:["Oh right — yeah okay, a couple of minutes is fine.","Alright, go on then — make it quick.","Okay, a couple of minutes. What do you need?","Fine, but keep it brief."],resist:["Nah, seriously — just call me back.","I really can't do it now.","Just email me something."]},
+      {client:["When would you call back?","What time were you thinking?","I could maybe do later this afternoon.","Tomorrow morning might be better."],hint:"RETURN TO SCRIPT — if they stay, start fact find. If genuinely busy, lock in a specific time.",script:'"That\'s all good. When would be a good time to call back — later today, tomorrow morning, lunch or after work?"',good_kw:['later today','tomorrow','morning','lunch','after work','tonight','what time','when works','five','six','lock in','date of birth','dob'],soften:["Tomorrow morning works — maybe around nine?","After work today, like five or six.","Lunchtime tomorrow would be good.","Tonight after six is fine."],resist:["I'll let you know.","Just call whenever.","I'm pretty busy all week."]},
+      {client:["Yeah, nine tomorrow morning works.","After work tonight at five is fine.","Okay, tomorrow at lunch.","Tonight at six, sure."],hint:"Confirm the time and try to get their date of birth now so you can prepare.",script:'"Sweet, I\'ll have everything ready. Just so I can get things set up — what\'s your date of birth?"',good_kw:['date of birth','dob','have things ready','have everything','prepare','so i can get','while i have','quick question','how old'],soften:["Oh sure — third of April eighty-five.","Date of birth? Nineteenth of September eighty-two.","Yeah, seventh of December eighty-seven.","Twenty-second of January ninety."],resist:["I'll give you that tomorrow.","Can we do all that when you call back?","Just call me and we'll go from there."]}
+    ]
+  },
+  agesago:{
+    openers:["Oh hi — that was ages ago. I'm not interested anymore.","Yeah that was like three or four months back — I've moved on from that.","Hi — look that was months ago, I don't think I need this now.","Oh hi. That feels like forever ago — things have changed since then."],
+    turns:[
+      {client:["I just kind of forgot about it.","Things changed.","I decided not to bother.","It just didn't happen."],hint:"CLARIFY — ask what changed. Did they sort something or decide not to go ahead?",script:'"No worries. Can I ask what changed? Did you end up sorting something out or decide not to go ahead?"',good_kw:['what changed','sort something','decide not','go ahead','end up','what happened'],soften:["No I didn't actually sort anything.","I got something through work.","No — I just forgot about it.","I looked into it but decided not to."],resist:["I just don't want it.","It's not for me.","I've moved on."]},
+      {client:["I think I'm probably fine without it.","I've got work cover.","I just decided it wasn't a priority.","I didn't see enough value in it."],hint:"BRIDGE — broker position. Compare multiple providers. People often pay more or have gaps.",script:'"Just to give you some context, I work as a broker and compare multiple providers rather than just one. What we often find is people either end up paying more than they need to or there are gaps in cover simply because they only looked at one option."',good_kw:['broker','compare','multiple providers','paying more','gaps','one option','just one','context'],soften:["Oh — I hadn't thought about gaps.","I suppose I only looked at one place.","Fair point, I didn't know that.","Okay, that's worth knowing."],resist:["I'll leave it.","It's not a priority.","I'm happy without it."]},
+      {client:["Alright, I'll have a quick look.","Okay, fair enough. What do you need?","Fine — I suppose it can't hurt.","Alright — what do you need from me?"],hint:"RETURN TO SCRIPT — get back to the fact find. Ask date of birth or occupation.",script:'"Let\'s have a quick look and see what\'s available. What\'s your date of birth?"',good_kw:['date of birth','dob','what do you do','work','occupation','for work','quick look','worth comparing'],soften:["Date of birth — fourteenth of June eighty-six.","Sure. DOB is third of September eighty-three.","Okay. Twenty-second of November eighty-eight.","I'm in healthcare. Date of birth — first of March eighty-five."],resist:["I'd need to think about it.","Can you send me something?","I'll look into it myself."]}
+    ]
+  },
+  justlooking:{
+    openers:["Oh hi — yeah I was just having a look around, I wasn't really looking to do anything.","Hi — I was just browsing, I didn't expect someone to call.","Yeah look, I was just seeing what was out there — not really ready to do anything.","Hi — I was just looking at options. I'm not really in buying mode right now."],
+    turns:[
+      {client:["I was just browsing, that's all.","I wasn't seriously looking.","Just wanted to see what was available.","I didn't think it would turn into a call."],hint:"ACKNOWLEDGE — that's totally fine, a lot of people start by having a look.",script:'"That\'s totally fine — a lot of people start by having a look around."',good_kw:['totally fine','totally','fair','makes sense','a lot of people','that's okay','no worries','happens','start'],soften:["Oh right, yeah okay. Fair enough.","Yeah I guess so.","Okay, that makes sense.","Fair enough."],resist:["I'm still not sure I need this.","I'm really just looking.","I don't want to be locked into anything."]},
+      {client:["I wasn't really sure what type of cover I needed.","I was looking at life insurance I think.","Not sure — just general insurance stuff.","I was looking at a few different types."],hint:"CLARIFY — ask what type of cover they were looking at.",script:'"Out of interest — what type of cover were you looking at? Life, income protection, or more general?"',good_kw:['what type','what kind','life','income protection','trauma','tpd','which cover','looking for','what were you'],soften:["Life insurance mostly.","I was looking at income protection.","A bit of everything to be honest.","Mainly life insurance — I've got a young family."],resist:["I don't really know what I need.","I'd need to think about it.","I'm not sure I'm ready."]},
+      {client:["I didn't realise how many options there were.","There seem to be a lot of providers.","I found it pretty confusing online.","I wasn't sure what the difference was between them all."],hint:"BRIDGE — explain the huge differences between providers, then get back to fact find.",script:'"There can be huge differences between providers depending on your situation — that\'s exactly what I do, compare the market and find the best fit. What\'s your date of birth? I\'ll see what options look like."',good_kw:['huge differences','differences','vary','varies','providers differ','not all the same','broker','compare','multiple','date of birth','dob'],soften:["Oh okay — yeah that would be handy.","Right, so you'd compare them for me.","That makes sense. Date of birth is third of May eighty-seven.","Yeah, that would save me a lot of time. DOB — fourteenth of February eighty-five."],resist:["I'd still want to do my own research.","I'm not ready to commit to anything.","Can you send me some info first?"]}
+    ]
+  },
+  scam:{
+    openers:["Hi — look, I'm not sure who you are. How did you get my number?","Oh hi — is this one of those scam calls? I get a lot of them.","Hello? I don't know who you are — I didn't sign up for anything.","Hi — I'm going to be honest, this feels a bit sketchy to me."],
+    turns:[
+      {client:["I've had a lot of dodgy calls lately.","How do I know you're legitimate?","I don't give out my details to random callers.","This sounds like a scam to me."],hint:"ACKNOWLEDGE — that's fair, there's a lot out there. Validate the concern.",script:'"That\'s completely fair — there is a lot of dodgy stuff out there. I completely understand the concern."',good_kw:['fair','that\'s fair','completely fair','understandable','makes sense','understand','of course','valid concern','no wonder','get that'],soften:["Oh — okay, fair enough.","I suppose that is fair.","Yeah I can see why you'd be cautious.","Okay, I understand that."],resist:["I still don't trust this.","I want to end the call.","Prove it then."]},
+      {client:["So where did you get my information?","What company is this exactly?","I want to know how you got my number.","Can you prove you're a real company?"],hint:"CLARIFY — ask what raised the concern, then explain who you are.",script:'"Can I ask what raised the concern? I\'m a licensed financial adviser with Invicta Financial — we\'re registered under the Financial Markets Authority in New Zealand."',good_kw:['licensed','broker','regulated','fma','financial markets','registered','invicta','nz','new zealand','what raised','can i ask'],soften:["Oh right — okay. I didn't know about the FMA registration.","Invicta Financial? I think I've heard of them.","Okay, that's more reassuring.","Right. And you're FMA registered?"],resist:["I still want to look you up first.","How do I know you're telling the truth?","I'd rather call you back."]},
+      {client:["Alright, I suppose I could check you out.","Okay, I'll take your details.","You can send me something so I can verify.","Fine — what is it you actually do?"],hint:"BRIDGE to RETURN TO SCRIPT — offer to send details, then ask what cover they currently have.",script:'"Happy to send you our details and the FMA register link. In the meantime — what cover do you currently have in place?"',good_kw:['send details','fma register','what cover','currently have','in place','existing','have anything','current policy'],soften:["Nothing at the moment.","I've got something through work.","Not much — mainly what came with my mortgage.","I don't really know what I've got."],resist:["I'll look you up and call you back.","Just send me the information.","I'm still not comfortable giving details."]}
+    ]
+  },
+  afford:{
+    openers:["Oh hi — look, I'm just not in a position to afford insurance right now.","Hi — yeah I did fill something out but honestly I can't afford it.","Hi there — insurance is just too expensive for us at the moment.","Yeah hi — the thing is we're just too tight financially for insurance right now."],
+    turns:[
+      {client:["I just don't have the money right now.","Everything is so expensive these days.","We're pretty stretched at the moment.","It's just not in the budget."],hint:"CLARIFY — ask if it's cashflow or perceived value. Not one-size-fits-all.",script:'"Is it more a cashflow thing, or is it about whether you feel it\'s actually worth it?"',good_kw:['cashflow','cash flow','afford','budget','how much','what sort of','flexible','structure','budget in mind','worth it'],soften:["Yeah, it's mostly cashflow to be honest.","Both really — it's expensive and I'm not sure it's worth it.","Mainly cashflow, we've got a lot of bills.","It's more that I'm not sure what I'd be paying for."],resist:["I just can't afford any extra costs.","No matter what, it's too much.","We're really struggling financially."]},
+      {client:["Even a cheap policy would be hard to fit in.","What's the minimum I'd have to pay?","I'd need something really affordable.","It's going to have to be pretty cheap to work for us."],hint:"BRIDGE — insurance isn't one-size-fits-all, structure it around budget.",script:'"Insurance isn\'t one-size-fits-all — I can structure a policy that fits around what you can afford. What were you thinking in terms of monthly spend? Even a small amount of cover is better than none."',good_kw:['not one size','structure','around your budget','flexible','budget','options','fit your','tailor','personalised','start with','small amount'],soften:["Oh right — so you can tailor it?","I didn't know you could structure it that way.","Okay, I suppose I could manage a small amount.","Fair point — something is better than nothing."],resist:["It's still going to be too much.","I really can't commit to anything.","What's the absolute minimum?"]},
+      {client:["Okay, what would a basic policy actually cost?","Alright, I'm open to looking at options.","Fine — what do you need to know?","Okay, let's see what's out there."],hint:"RETURN TO SCRIPT — get back to the fact find. Date of birth and occupation.",script:'"Let me ask a couple of quick questions and I\'ll see what options make sense for your situation. What\'s your date of birth?"',good_kw:['date of birth','dob','what do you do','work','occupation','for work','quick questions'],soften:["Sure. Date of birth — twenty-third of May eighty-nine.","I work in retail. DOB is twelfth of October eighty-seven.","Okay. Born fourth of January ninety.","I'm a builder. Date of birth — seventh of August eighty-six."],resist:["I'd still need to think about it.","Can you send me something to look at?","I'm not going to commit to anything today."]}
+    ]
+  },
+  workcover:{
+    openers:["Oh hi — yeah I've got insurance through work, so I think I'm covered.","Hi — I already have cover through my employer, I don't think I need anything else.","Yeah, my workplace sorts out insurance for all of us, so I'm good.","Hi — I've got a group policy through work, I should be fine."],
+    turns:[
+      {client:["Yeah my work has a group policy.","It comes with my employment package.","My employer pays for it.","It's included in my salary package."],hint:"CLARIFY — ask how much cover, what type, and whether they know the details.",script:'"How much cover do you have? And do you know what type — is it life, income protection, or both?"',good_kw:['how much','what type','what cover','what\'s included','what does it','details','amount','sum insured','how long'],soften:["Honestly, I'm not sure — I've never looked at the details.","I think it's life insurance but I don't know the amount.","I'd have to check, I don't know the specifics.","I think it's a few hundred thousand but I'm not sure."],resist:["I trust my employer to have sorted it properly.","I think it's fine — they wouldn't leave us exposed.","I'd rather not look into it."]},
+      {client:["I assume it's enough — it's a big company.","My HR says it's a good policy.","I've never had to use it so I assume it's fine.","It covers me, that's all I need to know."],hint:"BRIDGE — work cover ends when you leave, it's not permanent, and it may not be enough.",script:'"Work cover is a great foundation, but the big thing is it ends the day you leave your employer — it\'s not something you can take with you. And the amount is often not enough once you factor in your mortgage and living costs."',good_kw:['ends when you leave','leave employer','temporary','leaves when','not permanent','group policy','group cover','tied to employment','not enough','mortgage'],soften:["Oh — I hadn't thought about what happens if I leave.","Right, so I'd lose it if I changed jobs.","I suppose that's a good point.","Hm, yeah. I haven't thought about that."],resist:["I plan to stay at this job long term.","I'm not worried about that right now.","It's enough for now."]},
+      {client:["Okay, I suppose it would be worth having my own policy.","Alright, that's a fair point about leaving.","Fine — what would I need to look at?","Okay, tell me what's out there."],hint:"RETURN TO SCRIPT — get to fact find. Date of birth and what they currently do.",script:'"It\'s worth having something on the side that\'s yours no matter what. What\'s your date of birth?"',good_kw:['date of birth','dob','what do you do','occupation','current work','quick questions','worth looking'],soften:["Sure. DOB is twenty-first of March eighty-eight.","Date of birth — fourteenth of August eighty-five.","I'm in IT. Born second of December eighty-nine.","I work in finance. DOB is seventeenth of July eighty-seven."],resist:["I need to think about it more.","I'll talk to my HR first.","Can you send me something to read?"]}
+    ]
+  },
+  online:{
+    openers:["Hi — look, I checked online and the prices were a lot cheaper than what I've seen from advisers.","Oh hi — I've been getting quotes online and they were much less expensive.","Hi — the online quote I got was way less than I expected you to charge.","Hi, yeah look — I can get it cheaper online, so why would I use you?"],
+    turns:[
+      {client:["The online quote was a fraction of the price.","I can get it way cheaper through comparison sites.","Why would I pay more through a broker?","It seems like brokers just add cost."],hint:"ACKNOWLEDGE — call it a good question, then explain why.",script:'"Good question — I get asked this a lot."',good_kw:['good question','fair question','great question','totally understand','makes sense','that\'s fair','totally get that'],soften:["Oh okay.","Fair enough.","Right.","Alright, go on then."],resist:["But it's still more expensive isn't it.","Why should I pay more?","You still haven't answered my question."]},
+      {client:["So why is there such a price difference?","What's included that online doesn't offer?","Is the coverage actually better through you?","What do I get that I wouldn't get online?"],hint:"BRIDGE — online quotes are best-case scenario only, don't account for personal factors.",script:'"Online quotes are based on the ideal scenario — a healthy, non-smoking, standard-occupation person. They haven\'t factored in your health history, occupation, age or lifestyle. Real pricing is done properly and often comes in at a similar level once everything is accounted for."',good_kw:['ideal scenario','ideal','best case','assumed','assumptions','not factored','health history','occupation','smoker','personal','real pricing','similar'],soften:["Oh — so it's not a real price?","Right, I hadn't thought about that.","So the online price isn't actually what I'd pay?","I see — so it depends on my situation."],resist:["It still seems expensive.","I might just try going direct.","I'll take my chances online."]},
+      {client:["Alright, so what's the real price likely to be?","Okay, so how do you work out the actual price?","Fine — what do you need to run the numbers?","Okay, let's see what you can do."],hint:"RETURN TO SCRIPT — get date of birth to run proper comparison.",script:'"What\'s your date of birth? I\'ll run you a proper comparison and show you what it actually looks like."',good_kw:['date of birth','dob','how old','born','quick questions'],soften:["Sure. Date of birth — third of February eighty-eight.","DOB is ninth of July eighty-six.","Born twenty-eighth of November eighty-nine.","Second of April eighty-five."],resist:["I want to compare it myself.","I'll look into it.","Send me the numbers when you have them."]}
+    ]
+  },
+  hiddenfees:{
+    openers:["Oh hi — before we start, are there any hidden costs or fees I should know about?","Hi — I want to make sure I understand — are there any fees for using your service?","Hi there — I need to know upfront: is this free or do I pay you a fee?","Hi — just so I know, how do you make money from this? Is there a catch?"],
+    turns:[
+      {client:["I want to make sure I know what I'm paying for.","I don't want any surprise charges.","Is there a fee for your service?","How do you make money from this?"],hint:"ACKNOWLEDGE — answer clearly: no hidden fees, none at all.",script:'"No, none at all. There are absolutely no hidden fees."',good_kw:['no','none','no fees','nothing extra','no hidden','no cost','not at all','nothing at all','completely free','absolutely no'],soften:["Oh okay — good to know.","Right, so it's free?","Okay, that's reassuring.","Great, that's what I was hoping."],resist:["So how do you make money then?","That seems too good to be true.","There must be a catch somewhere."]},
+      {client:["So how do you actually get paid then?","What's in it for you?","I don't understand how it's free.","You must make money somehow."],hint:"BRIDGE — explain paid by providers, free for clients.",script:'"I\'m paid by the insurance provider when a policy is placed — it\'s called a commission. It doesn\'t cost you anything as a client. My job is to find the best fit for your situation."',good_kw:['paid by providers','providers pay','paid by the','commission','provider pays','free for you','free for clients','at no cost','doesn\'t cost you'],soften:["Oh I see — like a commission?","Right, so the provider pays you, not me?","I get it now — that's how it works.","Okay, that makes sense."],resist:["Does that mean you favour certain providers?","Isn't that a conflict of interest?","I'd still be worried about bias."]},
+      {client:["Okay, that actually makes sense.","Alright, so there's no cost to me?","Fine — what made you decide to call me?","Okay, so what happens next?"],hint:"RETURN TO SCRIPT — ask what made them look at insurance, then get date of birth.",script:'"What made you start looking at insurance? And what\'s your date of birth?"',good_kw:['what made you','why did you','what brought','what were you','date of birth','dob','for work','quick questions'],soften:["I just filled in a form online.","I've been thinking about it for a while — DOB is fifth of March eighty-eight.","My partner suggested it. Date of birth — twenty-first of June eighty-seven.","I got a letter from my bank. DOB is fourteenth of August eighty-nine."],resist:["I still want to think about it.","Can you call me back another time?","I'm not sure I'm ready."]}
+    ]
+  },
+  onlinequote:{
+    openers:["Hi — I thought I was going to be able to get a quote online. I wasn't expecting a call.","Oh hi — I assumed I could just compare prices on the website.","Hi — I just wanted a quick price, I didn't think I'd have to have a conversation.","Hi there — I was expecting an automated quote, not a phone call."],
+    turns:[
+      {client:["I thought it would be like car insurance.","I expected an instant quote.","Other insurance is online, why isn't this?","I didn't think I'd have to talk to someone."],hint:"ACKNOWLEDGE — validate it, most people expect it to work like car insurance.",script:'"That\'s fair — most people think it works like car insurance. It\'s actually quite different."',good_kw:['fair','makes sense','most people','lot of people','totally','understandable','like car insurance','get that'],soften:["Oh right, so it doesn't work the same way?","I didn't realise it was different.","Okay, fair enough.","Right."],resist:["But why can't it be simplified?","Surely it could be automated.","It seems unnecessarily complicated."]},
+      {client:["So what makes it so different to car insurance?","Why does life insurance need to be personalised?","Can't they just base it on generic factors?","What's so complicated about getting a price?"],hint:"BRIDGE — life insurance is personalised based on health, age, occupation, lifestyle.",script:'"Life insurance is completely different to car insurance — it\'s personalised based on your health, age, occupation and circumstances. Two people the same age can have very different premiums depending on their lifestyle and health history."',good_kw:['life insurance','not like car','personalised','personal factors','not the same','different to','health','age','occupation','custom','different'],soften:["Oh right, so it really does depend on your situation.","I hadn't thought about it that way.","So everyone's premium is different?","That makes sense actually."],resist:["I still think it should be simpler.","I'd rather just do it online.","Can't you just give me a rough price?"]},
+      {client:["Okay, so what do you need from me?","Alright, what's the first step?","Fine — what do you need to work out a price?","Okay, let's do this properly then."],hint:"RETURN TO SCRIPT — first things first, date of birth.",script:'"First things first — what was your date of birth?"',good_kw:['date of birth','dob','how old','born','first things first'],soften:["Sure. Date of birth — sixth of November eighty-seven.","DOB is twenty-second of January eighty-eight.","Born ninth of March eighty-six.","Sixteenth of July eighty-nine."],resist:["I don't have time right now.","Can I do this later?","I'll have to think about it."]}
+    ]
+  },
+  kiwisaver:{
+    openers:["Oh hi — I've got my KiwiSaver with the bank, I'm pretty happy with it to be honest.","Hi — yeah I have KiwiSaver, it's just through ANZ, I've never really looked at it.","Hi there — I've got KiwiSaver through Westpac. I didn't think I needed to change it.","Hi — yeah, I've got KiwiSaver. I figured the bank was the easiest option."],
+    turns:[
+      {client:["I've had it with the bank for years, it seems fine.","I just left it where it was when I started work.","The bank seems safe enough to me.","I've never really thought about changing it."],hint:"CLARIFY — ask what fund type they're currently in (growth, balanced, conservative).",script:'"Out of interest — what fund are you currently in? Growth, balanced or conservative?"',good_kw:['fund type','growth','balanced','conservative','which fund','what fund','what type of fund','fund they\'re in','current fund'],soften:["Honestly, I have no idea. I've never thought about it.","I think it's just the default one.","I'm not sure — whatever they put me in originally.","I think it might be balanced? I'm not sure."],resist:["It doesn't really matter does it?","I trust the bank to have it right.","I've never really looked into it."]},
+      {client:["Does the fund type really make that much difference?","I thought they were all pretty similar.","Is it really worth switching?","How big a difference could it actually make?"],hint:"BRIDGE — hundreds of thousands difference over 20-30 years due to fees and returns.",script:'"The difference in fees and returns between providers can add up to hundreds of thousands of dollars over 20 to 30 years. Bank KiwiSaver providers tend to have higher fees and lower returns than specialist providers."',good_kw:['hundreds of thousands','hundred thousand','difference over','twenty years','thirty years','long term','over time','compounding','fees','returns','performance','specialist'],soften:["Oh — I had no idea it could be that much.","Hundreds of thousands?","That's significant.","I hadn't thought about the long-term difference."],resist:["I still think the bank is safe.","I'm not sure I want to change it.","It seems complicated."]},
+      {client:["So which provider would you recommend?","What's better than the bank?","Who do you work with for KiwiSaver?","What's the best option out there?"],hint:"Name NZ Funds specifically, then get date of birth for a comparison.",script:'"We work with NZ Funds — they consistently outperform bank KiwiSaver providers across most time horizons. To run a comparison, what\'s your date of birth?"',good_kw:['nz funds','nzfunds','new zealand funds','date of birth','dob','how old','born'],soften:["Oh NZ Funds — I've seen them advertised.","Right, NZ Funds. Date of birth is twelfth of April eighty-six.","I'll look them up. DOB is twenty-third of August eighty-eight.","Okay, worth a look. Born ninth of November eighty-seven."],resist:["I'd want to do my own research.","I'm not going to switch without knowing more.","Can you send me some comparisons?"]}
+    ]
+  },
+  mortgage:{
+    openers:["Oh hi — yeah, we're actually looking at buying a house at the moment.","Hi — I'm in the middle of buying my first home, it's pretty exciting but stressful.","Hi there — yeah we've just had an offer accepted on a place, so busy times.","Hi — we're actually going through the mortgage process right now."],
+    turns:[
+      {client:["We've found a place we like and we're hoping to put an offer in.","We've just had an offer accepted, we're over the moon.","We're trying to get our finances sorted before settlement.","It's been a long process but we're nearly there."],hint:"ACKNOWLEDGE the milestone and ask about their timeline.",script:'"That\'s exciting! Congratulations. When are you looking at settling?"',good_kw:['congratulations','congrats','exciting','that\'s great','that\'s amazing','when are you','what\'s the timeline','how far along','when do you','settlement','when\'s settlement'],soften:["Settlement is in about six weeks.","We're hoping to be in by end of next month.","Six to eight weeks if all goes well.","About two months away."],resist:["It's still early days.","We haven't sorted everything yet.","We're not quite there."]},
+      {client:["We've been using a mortgage broker already.","My partner's been dealing with a broker.","We found someone through our bank.","We're not sure if we're locked in with our broker."],hint:"CLARIFY whether they're already using a mortgage broker and if they're locked in.",script:'"Do you already have a mortgage broker sorted? Are you locked into working with them?"',good_kw:['broker','mortgage broker','who are you using','have someone','already got a broker','are you locked in','who\'s your','which broker'],soften:["We've been talking to one but nothing's been signed.","We're not locked in — we only had one meeting.","We haven't formally committed to anyone.","We started with someone but we're not sure they're the right fit."],resist:["We're pretty committed to who we've got.","They've already started the application.","I don't want to start again with someone new."]},
+      {client:["So what does Invicta do for mortgages?","How does it work if we use your mortgage team?","What can you offer that our current broker can't?","Would switching to you cause any problems?"],hint:"Mention Invicta mortgage division and offer a warm intro.",script:'"We have a mortgage division here at Invicta — our mortgage adviser works alongside the insurance team so everything is aligned. Would you like me to set up an intro call? It only takes a couple of minutes and there\'s no obligation."',good_kw:['invicta','invicta mortgage','our mortgage','mortgage team','mortgage division','we have a','we work with mortgage','mortgage side','warm intro','introduce you','put you in touch','connect you','happy to refer','set up a call','refer you'],soften:["Yeah, that sounds like a good idea.","Sure — an intro call would be fine.","Okay, why not. Set up the call.","That would be helpful actually."],resist:["I think we'll stick with who we've got.","I don't want to complicate things.","We're pretty far along the process."]}
+    ]
+  }
+};
+
+// ── SCORING ───────────────────────────────────────────────────────────────
+const SCORING={
+  quote:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Validated without apologising',kw:['fair','makes sense','save','straight away','time as well','totally','i get that','understand'],pts:25,script:'\"That\'s fair. If I could give you a quote straight away, I would.\"'},
+    {step:'Bridge',label:'Mentioned broker + multiple providers',kw:['broker','multiple providers','partners','aia','chubb','nib','personal factors','not one size','occupation','smoking'],pts:35,script:'\"I work as a broker with Partners Life, AIA, Chubb and NIB. It\'s not one-size-fits-all.\"'},
+    {step:'Return to Script',label:'Asked for date of birth',kw:['date of birth','dob','how old','born'],pts:40,script:'\"What was your date of birth?\"'}
+  ]},
+  notinterested:{total:100,checkpoints:[
+    {step:'Clarify',label:'Asked what changed / sorted or not',kw:['what changed','sort something','did you sort','go ahead','decide not','end up','what happened'],pts:30,script:'\"Can I ask what changed? Did you sort something or decide not to go ahead?\"'},
+    {step:'Bridge',label:'Broker position + multiple providers',kw:['broker','compare','multiple providers','paying more','missing out','pricing','quality','vary','market'],pts:35,script:'\"I work as a broker — I compare multiple providers to make sure you\'re not paying more or missing out.\"'},
+    {step:'Return to Script',label:'Asked date of birth or occupation',kw:['date of birth','dob','what do you do','work','occupation','currently doing','for work'],pts:35,script:'\"What\'s your date of birth? Or what are you currently doing for work?\"'}
+  ]},
+  sorted:{total:100,checkpoints:[
+    {step:'Clarify',label:'Asked who, what cover, increasing each year',kw:['who did','which provider','who are you with','what cover','what type','increasing','premiums','each year','why them','why did'],pts:30,script:'\"Who did you go with? What cover? Was it increasing each year?\"'},
+    {step:'Bridge',label:'Mentioned gaps or paying more from one option',kw:['paying more','gaps','one option','only one','compare','multiple providers','peace of mind','everything available'],pts:35,script:'\"People often pay more or have gaps when they\'ve only looked at one option.\"'},
+    {step:'Return to Script',label:'Asked about work/occupation',kw:['what do you do','work','occupation','for work','currently do','quick questions','worth comparing'],pts:35,script:'\"What do you currently do for work?\"'}
+  ]},
+  dontremember:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Acknowledged without confrontation',kw:['alright','while ago','probably','okay','no worries','not a problem','some time ago'],pts:20,script:'\"That\'s alright. It was probably a little while ago.\"'},
+    {step:'Clarify',label:'Explained the online form/social media',kw:['online form','social media','internet','filled out','online','form','website','ad','requested','life insurance'],pts:25,script:'\"You would have filled out an online form through social media or the internet.\"'},
+    {step:'Bridge',label:'Saw the request come through',kw:['saw your request','request come through','request'],pts:20,script:'\"I saw your request come through.\"'},
+    {step:'Return to Script',label:'Asked what cover currently in place',kw:['what cover','currently have','in place','existing','have anything','current policy'],pts:35,script:'\"What cover do you currently have in place?\"'}
+  ]},
+  callback:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Acknowledged the timing',kw:['no problem','that\'s fine','totally understand','fair enough','no worries','can do that'],pts:20,script:'\"No problem — it\'s just a quick chat.\"'},
+    {step:'Bridge',label:'Tried to keep them on the call',kw:['couple of minutes','quick chat','right now','time now','only take','few minutes','two minutes','multiple providers'],pts:35,script:'\"It will only take a couple of minutes if you have time now.\"'},
+    {step:'Return to Script',label:'Locked in time or got DOB',kw:['later today','tomorrow','morning','lunch','after work','tonight','date of birth','dob','what time','lock in'],pts:45,script:'\"When works — later today, tomorrow morning, lunch or after work? What\'s your date of birth?\"'}
+  ]},
+  agesago:{total:100,checkpoints:[
+    {step:'Clarify',label:'Asked what changed',kw:['what changed','sort something','decide not','go ahead','end up','what happened'],pts:30,script:'\"Can I ask what changed? Did you end up sorting something?\"'},
+    {step:'Bridge',label:'Broker comparison, gaps/paying more',kw:['broker','compare','multiple providers','paying more','gaps','one option','just one','context'],pts:35,script:'\"I work as a broker — people often pay more or have gaps from only looking at one option.\"'},
+    {step:'Return to Script',label:'Got back to fact find',kw:['date of birth','dob','what do you do','work','occupation','for work','quick look','worth comparing'],pts:35,script:'\"What\'s your date of birth?\"'}
+  ]},
+  justlooking:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Validated browsing as normal',kw:['makes sense','fair','understandable','totally','of course','happens a lot','lot of people','quite common','totally fine'],pts:20,script:'\"That\'s totally fine — a lot of people start by having a look.\"'},
+    {step:'Clarify',label:'Asked what type of cover',kw:['what type','what kind','life','income protection','trauma','tpd','which cover','looking for','what were you'],pts:25,script:'\"What type of cover were you looking at?\"'},
+    {step:'Bridge',label:'Huge differences between providers',kw:['huge differences','differences','vary','varies','providers differ','not all the same','broker','compare','multiple'],pts:20,script:'\"There can be huge differences between providers depending on your situation.\"'},
+    {step:'Return to Script',label:'Got to date of birth',kw:['date of birth','dob','what do you do','work','occupation','for work','quick questions'],pts:35,script:'\"What\'s your date of birth?\"'}
+  ]},
+  scam:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Acknowledged the fair concern',kw:['fair','that\'s fair','completely fair','understandable','makes sense','understand','valid concern'],pts:20,script:'\"That\'s completely fair — there is a lot of dodgy stuff out there.\"'},
+    {step:'Clarify',label:'Asked what raised the concern',kw:['what happened','what made you','can i ask','what raised','why the concern','licensed'],pts:20,script:'\"Can I ask what raised the concern?\"'},
+    {step:'Bridge',label:'Licensed FMA registered broker position',kw:['licensed','broker','regulated','fma','financial markets','registered','invicta','nz','new zealand'],pts:25,script:'\"I\'m a licensed financial adviser with Invicta Financial, registered under the FMA.\"'},
+    {step:'Return to Script',label:'Got back to fact find',kw:['what cover','currently have','date of birth','dob','what do you do','work'],pts:35,script:'\"What cover do you currently have in place?\"'}
+  ]},
+  afford:{total:100,checkpoints:[
+    {step:'Clarify',label:'Asked cashflow vs perceived value',kw:['cashflow','cash flow','afford','budget','how much','what sort of','flexible','structure','budget in mind','worth it'],pts:30,script:'\"Is it more a cashflow thing, or about whether it\'s worth it?\"'},
+    {step:'Bridge',label:'Not one-size-fits-all, structure around budget',kw:['not one size','structure','around your budget','flexible','budget','options','fit your','tailor','personalised','start with'],pts:35,script:'\"Insurance isn\'t one-size-fits-all — I can structure a policy around what you can afford.\"'},
+    {step:'Return to Script',label:'Got to date of birth',kw:['date of birth','dob','what do you do','work','occupation','for work','quick questions'],pts:35,script:'\"What\'s your date of birth?\"'}
+  ]},
+  workcover:{total:100,checkpoints:[
+    {step:'Clarify',label:'Asked how much cover / what type',kw:['how much','what type','what cover','what\'s included','what does it','details','amount','sum insured'],pts:30,script:'\"How much cover do you have? What type — life, income protection?\"'},
+    {step:'Bridge',label:'Work cover ends when you leave',kw:['ends when you leave','leave employer','temporary','leaves when','not permanent','group policy','group cover','tied to employment'],pts:35,script:'\"Work cover ends the day you leave your employer — you can\'t take it with you.\"'},
+    {step:'Return to Script',label:'Got to date of birth',kw:['date of birth','dob','what do you do','occupation','current work','quick questions'],pts:35,script:'\"What\'s your date of birth?\"'}
+  ]},
+  online:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Called it a good question',kw:['good question','fair question','great question','totally understand','makes sense','that\'s fair'],pts:20,script:'\"Good question — I get asked this a lot.\"'},
+    {step:'Bridge',label:'Online quotes are ideal scenario only',kw:['ideal scenario','ideal','best case','assumed','assumptions','not factored','health history','occupation','smoker','personal','real pricing'],pts:45,script:'\"Online quotes assume the ideal scenario. Real pricing accounts for health, occupation and lifestyle.\"'},
+    {step:'Return to Script',label:'Got date of birth',kw:['date of birth','dob','how old','born','quick questions'],pts:35,script:'\"What\'s your date of birth?\"'}
+  ]},
+  hiddenfees:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Answered no fees directly',kw:['no','none','no fees','nothing extra','no hidden','no cost','not at all','nothing at all','completely free','absolutely no'],pts:25,script:'\"No, none at all.\"'},
+    {step:'Bridge',label:'Paid by providers, free for clients',kw:['paid by providers','providers pay','paid by the','commission','provider pays','free for you','free for clients','at no cost','doesn\'t cost you'],pts:40,script:'\"I\'m paid by the provider — it doesn\'t cost you anything as a client.\"'},
+    {step:'Return to Script',label:'Asked what made them look / got DOB',kw:['what made you','why did you','what brought','what were you','date of birth','dob','for work','quick questions'],pts:35,script:'\"What made you start looking at insurance? What\'s your date of birth?\"'}
+  ]},
+  onlinequote:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Validated the expectation',kw:['fair','makes sense','most people','lot of people','totally','understandable','like car insurance','get that'],pts:20,script:'\"That\'s fair — most people think it works like car insurance.\"'},
+    {step:'Bridge',label:'Life insurance is personalised not like car',kw:['life insurance','not like car','personalised','personal factors','not the same','different to','health','age','occupation','custom','different'],pts:45,script:'\"Life insurance is completely different — personalised based on your health, age and circumstances.\"'},
+    {step:'Return to Script',label:'Asked for date of birth',kw:['date of birth','dob','how old','born','first things first'],pts:35,script:'\"What was your date of birth?\"'}
+  ]},
+  kiwisaver:{total:100,checkpoints:[
+    {step:'Clarify',label:'Asked about current fund type',kw:['fund type','growth','balanced','conservative','which fund','what fund','what type of fund','current fund'],pts:25,script:'\"What fund are you in — growth, balanced or conservative?\"'},
+    {step:'Bridge',label:'Hundreds of thousands difference over 20-30 years',kw:['hundreds of thousands','hundred thousand','difference over','twenty years','thirty years','long term','over time','compounding','fees','returns','performance','specialist'],pts:25,script:'\"The difference can add up to hundreds of thousands over 20-30 years.\"'},
+    {step:'Bridge',label:'Named NZ Funds specifically',kw:['nz funds','nzfunds','new zealand funds'],pts:20,script:'\"We work with NZ Funds — they consistently outperform bank providers.\"'},
+    {step:'Return to Script',label:'Got date of birth',kw:['date of birth','dob','how old','born'],pts:30,script:'\"What\'s your date of birth?\"'}
+  ]},
+  mortgage:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Acknowledged milestone and asked timeline',kw:['congratulations','congrats','exciting','that\'s great','that\'s amazing','when are you','what\'s the timeline','how far along','settlement'],pts:20,script:'\"That\'s exciting! Congratulations. When are you settling?\"'},
+    {step:'Clarify',label:'Asked if they have a mortgage broker',kw:['broker','mortgage broker','who are you using','have someone','already got a broker','are you locked in','who\'s your','which broker'],pts:30,script:'\"Do you already have a mortgage broker sorted?\"'},
+    {step:'Bridge',label:'Mentioned Invicta mortgage division',kw:['invicta','invicta mortgage','our mortgage','mortgage team','mortgage division','we have a','we work with mortgage'],pts:25,script:'\"We have a mortgage division at Invicta.\"'},
+    {step:'Return to Script',label:'Offered warm intro',kw:['warm intro','introduce you','put you in touch','connect you','happy to refer','set up a call','introduce to','refer you','intro call'],pts:25,script:'\"Would you like me to set up an intro call with our mortgage adviser?\"'}
+  ]}
+};
+
+// ── CALL STATE ────────────────────────────────────────────────────────────
+let adviserTx=[], turnIdx=0, timerSecs=0, timerInt=null, interimBuf='';
+let currentAudio=null, recog=null, isMuted=false, callRunning=false;
+let callScenario='', callName='', callPers=null, callStartTime=null;
+
+function startCall(key){
+  // Reset all state (Task 11.1)
+  adviserTx=[];turnIdx=0;timerSecs=0;isMuted=false;interimBuf='';callRunning=true;
+  if(currentAudio){try{currentAudio.pause();}catch(e){} currentAudio=null;}
+  if(recog){try{recog.stop();}catch(e){} recog=null;}
+  if(timerInt){clearInterval(timerInt);timerInt=null;}
+
+  const s=SC[key]; if(!s)return;
+  callScenario=key; callStartTime=Date.now();
+  callName=s.names[Math.floor(Math.random()*s.names.length)];
+  callPers=PERS[Math.floor(Math.random()*PERS.length)];
+
+  document.getElementById('call-pill').textContent=s.pill;
+  document.getElementById('call-name').textContent=callName;
+  document.getElementById('av-init').textContent=callName[0];
+  document.getElementById('pers-tag').textContent=callPers.tag;
+  document.getElementById('call-timer').textContent='0:00';
+  document.getElementById('call-status').textContent='Connecting...';
+  document.getElementById('tx-box').innerHTML='<div class="tl" style="color:rgba(255,255,255,0.18);font-size:12px;text-align:center" id="tx-ph">Transcript will appear here</div>';
+
+  // Step tracker
+  const fw=s.fw;
+  for(let i=0;i<4;i++){
+    const sb=document.getElementById('sb'+i);
+    const sl=document.getElementById('sl'+i);
+    if(sb&&sl){
+      if(i<fw.length){sb.style.display='';sl.textContent=fw[i];}
+      else{sb.style.display='none';}
+      sb.className='step-box';
+    }
+  }
+  if(fw.length>0){const sb=document.getElementById('sb0');if(sb)sb.classList.add('active');}
+
+  // Reset mute button
+  const muteBtn=document.getElementById('mute-btn');
+  if(muteBtn){muteBtn.classList.remove('muted-on');muteBtn.innerHTML='<i class="ti ti-volume"></i>';}
+
+  document.getElementById('call-screen').classList.remove('hidden');
+
+  timerInt=setInterval(()=>{
+    timerSecs++;
+    const m=Math.floor(timerSecs/60),s2=timerSecs%60;
+    document.getElementById('call-timer').textContent=m+':'+(s2<10?'0':'')+s2;
+  },1000);
+
+  const dlg=DLG[s.dlg];
+  const opener=dlg.openers[Math.floor(Math.random()*dlg.openers.length)];
+  addTx('client',opener);
+  showHint(0);
+  setMicState('listening');
+  speakClient(opener,()=>{startListening();});
+}
+
+function endCall(){
+  callRunning=false;
+  if(timerInt){clearInterval(timerInt);timerInt=null;}
+  if(recog){try{recog.stop();}catch(e){} recog=null;}
+  if(currentAudio){try{currentAudio.pause();}catch(e){} currentAudio=null;}
+  document.getElementById('call-screen').classList.add('hidden');
+  showScore();
+}
+
+function showScore(){
+  const name=localStorage.getItem('inv_name')||'Unknown';
+  const scoring=SCORING[callScenario];
+  if(!scoring){document.getElementById('score-screen').classList.remove('hidden');return;}
+
+  let total=0, breakdown=[];
+  const fullTx=adviserTx.join(' ').toLowerCase();
+
+  scoring.checkpoints.forEach(cp=>{
+    const hit=cp.kw.some(k=>fullTx.includes(k.toLowerCase()));
+    const earned=hit?cp.pts:0;
+    total+=earned;
+    breakdown.push({...cp,earned,hit});
+  });
+
+  const pct=Math.round(total/scoring.total*100);
+  const dur=timerSecs;
+  const xp=calcXP(pct);
+
+  saveSession({adviserName:name,scenario:SC[callScenario].title,scenarioKey:callScenario,score:pct,duration:dur,date:new Date().toISOString(),xpEarned:xp});
+  updateStreak(name);
+  const xpResult=addXP(name,xp);
+  updateSidebarXP();
+
+  document.getElementById('final-score').textContent=pct+'%';
+  const grade=pct>=80?'Excellent!':pct>=65?'Good work.':pct>=45?'Keep practising.':'Needs work.';
+  document.getElementById('score-grade').textContent=grade;
+  document.getElementById('score-sub').textContent=SC[callScenario].title+' · '+Math.floor(dur/60)+'m '+(dur%60)+'s';
+
+  // Sub-scores by step category
+  const stepNames=['Acknowledge','Clarify','Bridge','Return to Script'];
+  for(let i=0;i<4;i++){
+    const sEl=document.getElementById('ss'+i);
+    const stepCps=breakdown.filter(b=>b.step===stepNames[i]);
+    if(stepCps.length===0){sEl.textContent='—';sEl.style.color='var(--text-muted)';continue;}
+    const earned=stepCps.reduce((a,b)=>a+b.earned,0);
+    const max=stepCps.reduce((a,b)=>a+b.pts,0);
+    const pct2=max>0?Math.round(earned/max*100):0;
+    sEl.textContent=pct2+'%';
+    sEl.style.color=pct2>=70?'var(--success)':pct2>=40?'var(--amber)':'var(--danger)';
+  }
+
+  // Breakdown
+  document.getElementById('score-breakdown').innerHTML=breakdown.map(b=>`
+    <div class="sc-row">
+      <div class="sc-row-step">${b.step}</div>
+      <div class="sc-row-label">${b.label}</div>
+      <div class="sc-row-pts" style="color:${b.hit?'var(--success)':'var(--danger)'}">${b.hit?'+'+b.pts:'0'}/${b.pts}</div>
+    </div>`).join('');
+
+  // Feedback
+  const missed=breakdown.filter(b=>!b.hit);
+  document.getElementById('fb-list').innerHTML=missed.length===0
+    ?'<div style="color:var(--success);font-size:13px;font-weight:600;padding:8px 0">✓ All checkpoints hit! Great work.</div>'
+    :missed.map(b=>`<div class="fb-item"><div class="fb-step">${b.step}</div><div class="fb-what">Missed: ${b.label}</div><div class="fb-script"><strong>Try this</strong>${b.script||'Use the framework script for this step.'}</div></div>`).join('');
+
+  // XP badge
+  const xpBadge=document.getElementById('xp-earned-badge');
+  xpBadge.textContent='+'+xp+' XP ⚡';
+  xpBadge.classList.remove('hidden');
+
+  document.getElementById('score-screen').classList.remove('hidden');
+
+  // Reset debrief
+  document.getElementById('debrief-panel').classList.add('hidden');
+  document.getElementById('debrief-panel').innerHTML='';
+  document.getElementById('ai-debrief-btn').innerHTML='<i class="ti ti-robot" style="font-size:12px;margin-right:4px"></i>AI Debrief';
+  document.getElementById('ai-debrief-btn').disabled=false;
+
+  if(xpResult.leveledUp){
+    setTimeout(()=>{
+      const lu=xpResult.newLevel;
+      document.getElementById('lu-emoji').textContent=lu.emoji;
+      document.getElementById('lu-level').textContent=lu.name;
+      document.getElementById('lu-title').textContent='Level '+lu.level;
+      const ov=document.getElementById('levelup-overlay');
+      ov.classList.remove('hidden');
+      setTimeout(()=>ov.classList.add('hidden'),2500);
+    },600);
+  }
+
+  renderDashboard();
+  updatePBBadges();
+}
+
+// ── TTS & SPEECH ──────────────────────────────────────────────────────────
+async function speakClient(text,cb){
+  if(isMuted){setTimeout(cb||function(){},3000);return;}
+  if(currentAudio){try{currentAudio.pause();}catch(e){}}
+  document.getElementById('call-status').textContent='Client speaking...';
+  setRings(true);
+  if(EL_KEY){
+    try{
+      const vId=VOICE_IDS[SEL_VOICE]||VOICE_IDS.Callum;
+      const resp=await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+vId+'/stream',{
+        method:'POST',headers:{'xi-api-key':EL_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({text,model_id:'eleven_multilingual_v2',voice_settings:{stability:callPers.s,similarity_boost:callPers.y}})
+      });
+      if(resp.ok){
+        const blob=await resp.blob();
+        const url=URL.createObjectURL(blob);
+        currentAudio=new Audio(url);
+        currentAudio.onended=()=>{setRings(false);document.getElementById('call-status').textContent='Your turn...';if(cb)cb();};
+        currentAudio.play();return;
+      }
+    }catch(e){}
+  }
+  const utt=new SpeechSynthesisUtterance(text);
+  utt.rate=0.95;utt.pitch=1;
+  utt.onend=()=>{setRings(false);document.getElementById('call-status').textContent='Your turn...';if(cb)cb();};
+  speechSynthesis.speak(utt);
+}
+
+function setRings(on){
+  ['ring1','ring2','ring3'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',on);});
+}
+
+function setMicState(state){
+  const ring=document.getElementById('mic-ring');
+  const lbl=document.getElementById('mic-lbl');
+  const wave=document.getElementById('wave-row');
+  if(ring){ring.className='mic-ring '+(state==='listening'?'listening':'muted');}
+  if(lbl){lbl.textContent=state==='listening'?'Listening...':'Mic off';}
+  if(wave){
+    wave.style.opacity=state==='listening'?'1':'0';
+    wave.querySelectorAll('.wb').forEach(b=>{b.className='wb'+(state==='listening'?' live':'');});
+  }
+}
+
+function startListening(){
+  if(!('SpeechRecognition' in window||'webkitSpeechRecognition' in window)){
+    document.getElementById('call-status').textContent='Voice not supported — type or skip';
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recog=new SR();
+  recog.continuous=true;recog.interimResults=true;recog.lang='en-NZ';
+  let final='';
+  recog.onresult=(e)=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal){final+=e.results[i][0].transcript+' ';}
+      else{interim+=e.results[i][0].transcript;}
+    }
+    if(interim)document.getElementById('call-status').textContent=interim;
+    if(final.trim())interimBuf=final.trim();
+  };
+  recog.onend=()=>{
+    if(interimBuf){addTx('adviser',interimBuf);adviserTx.push(interimBuf);interimBuf='';}
+    if(callRunning)advanceTurn();
+  };
+  recog.onerror=(e)=>{if(e.error!=='aborted'&&callRunning)advanceTurn();};
+  recog.start();
+  setMicState('listening');
+}
+
+function addTx(role,text){
+  const box=document.getElementById('tx-box');
+  const ph=document.getElementById('tx-ph');
+  if(ph)ph.remove();
+  const lbl=document.createElement('div');lbl.className='tl lbl';lbl.textContent=role==='client'?'CLIENT':'YOU';
+  const line=document.createElement('div');line.className='tl '+role;line.textContent=text;
+  box.appendChild(lbl);box.appendChild(line);
+  box.scrollTop=box.scrollHeight;
+}
+
+function advanceTurn(){
+  if(!callRunning)return;
+  const dlg=DLG[SC[callScenario].dlg];
+  if(turnIdx>=dlg.turns.length){endCall();return;}
+
+  const turn=dlg.turns[turnIdx];
+  const allTx=adviserTx.join(' ').toLowerCase();
+  const goodHit=turn.good_kw.some(k=>allTx.includes(k.toLowerCase()));
+
+  let clientLine;
+  if(goodHit&&turn.soften.length>0){clientLine=turn.soften[Math.floor(Math.random()*turn.soften.length)];}
+  else if(!goodHit&&turn.resist.length>0){clientLine=turn.resist[Math.floor(Math.random()*turn.resist.length)];}
+  else{clientLine=turn.client[Math.floor(Math.random()*turn.client.length)];}
+
+  // Update step tracker
+  const sb=document.getElementById('sb'+turnIdx);
+  if(sb&&sb.style.display!=='none')sb.classList.replace('active','done');
+  turnIdx++;
+  const nextSb=document.getElementById('sb'+turnIdx);
+  if(nextSb&&nextSb.style.display!=='none')nextSb.classList.add('active');
+
+  addTx('client',clientLine);
+
+  if(turnIdx>=dlg.turns.length){
+    speakClient(clientLine,()=>{setTimeout(endCall,1200);});
+  }else{
+    showHint(turnIdx);
+    speakClient(clientLine,()=>{startListening();});
+  }
+}
+
+function showHint(idx){
+  const dlg=DLG[SC[callScenario].dlg];
+  if(idx>=dlg.turns.length)return;
+  const turn=dlg.turns[idx];
+  const bar=document.getElementById('hint-bar');
+  const parts=turn.hint.split(' — ');
+  document.getElementById('hint-step').textContent=parts[0]||'';
+  document.getElementById('hint-text').textContent=turn.hint;
+  document.getElementById('hint-script').innerHTML='<strong>Script</strong>'+turn.script;
+  bar.classList.add('show');
+}
+
+function toggleMute(){
+  isMuted=!isMuted;
+  const btn=document.getElementById('mute-btn');
+  btn.classList.toggle('muted-on',isMuted);
+  btn.innerHTML='<i class="ti ti-'+(isMuted?'volume-off':'volume')+'"></i>';
+  setMicState(isMuted?'muted':'listening');
+}
+
+// Escape key during call (Task 11.7)
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&document.getElementById('call-screen')&&!document.getElementById('call-screen').classList.contains('hidden')){
+    if(confirm('End this call and see your score?'))endCall();
+  }
+});
+
+// ── VIEW MANAGEMENT ───────────────────────────────────────────────────────
+function showView(v){
+  document.querySelectorAll('[id^="view-"]').forEach(el=>el.classList.add('hidden'));
+  const el=document.getElementById('view-'+v);if(el)el.classList.remove('hidden');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    n.classList.toggle('active',!!(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+v+"'")));
+  });
+  const titles={dashboard:'Dashboard',practice:'Practice',tasks:'Tasks',progress:'Progress',leaderboard:'Leaderboard',manager:'Team Overview'};
+  document.getElementById('page-title').textContent=titles[v]||v;
+  document.title=(titles[v]||v)+' — Invicta Training Hub';
+  if(v==='dashboard')renderDashboard();
+  if(v==='progress')renderProgress();
+  if(v==='leaderboard')renderLeaderboard();
+  if(v==='manager')renderManager();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────
+function renderDashboard(){
+  const name=localStorage.getItem('inv_name')||'';if(!name)return;
+  const first=name.split(' ')[0];
+  const h=new Date().getHours();
+  const greeting=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  document.getElementById('dashboard-greeting').textContent=greeting+', '+first+'!';
+
+  const history=getAdviserHistory(name);
+  const xp=parseInt(localStorage.getItem(getXPKey(name))||'0');
+  const info=getLevelInfo(xp);
+  const streak=getStreak(name);
+
+  if(history.length>0){
+    const avg=Math.round(history.reduce((a,b)=>a+b.score,0)/history.length);
+    const best=Math.max(...history.map(h=>h.score));
+    document.getElementById('stat-avg-score').textContent=avg+'%';
+    document.getElementById('stat-avg-sub').textContent=history.length+' sessions';
+    document.getElementById('stat-sessions').textContent=history.length;
+    document.getElementById('stat-best-obj').textContent=best+'%';
+    document.getElementById('stat-best-sub').textContent='Personal best';
+  }
+
+  // Level card
+  document.getElementById('level-name').textContent=info.emoji+' '+info.name;
+  document.getElementById('level-title-dash').textContent='Level '+info.level;
+  document.getElementById('level-xp').textContent=xp+' XP'+(info.max!==Infinity?' / '+info.max:'');
+  const min=info.min,max=info.max===Infinity?xp+200:info.max;
+  document.getElementById('level-bar-fill').style.width=Math.min(max>min?Math.round((xp-min)/(max-min)*100):100,100)+'%';
+
+  // Streak
+  document.getElementById('stat-streak-val').textContent=streak;
+  document.getElementById('topbar-streak').innerHTML='🔥 <strong>'+streak+'</strong> day streak';
+  document.getElementById('streak-msg').textContent=streak>0?'Keep it up!':'Practice today to start your streak!';
+  const streakCard=document.getElementById('streak-card');
+  if(streakCard)streakCard.style.boxShadow=streak>=7?'0 0 0 2px var(--amber),0 4px 16px rgba(200,123,10,0.2)':'';
+
+  // Recent activity
+  const recent=history.slice(0,3);
+  const ra=document.getElementById('recent-activity');
+  if(recent.length>0){
+    ra.innerHTML=recent.map(s=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light)">
+        <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:${s.score>=70?'#D1FAE5':s.score>=45?'#FFF3DB':'#FEE2E2'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${s.score>=70?'#065F46':s.score>=45?'#92580A':'#991B1B'};flex-shrink:0">${s.score}%</div>
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.scenario}</div><div style="font-size:11px;color:var(--text-muted)">${formatDate(s.date)}</div></div>
+        <div style="font-size:11px;color:var(--amber);font-weight:700">+${s.xpEarned} XP</div>
+      </div>`).join('');
+  } else {
+    ra.innerHTML='<div style="font-size:13px;color:var(--text-muted)">No sessions yet — start a practice!</div>';
+  }
+
+  // Scenario performance breakdown
+  const breakdown=document.getElementById('skill-breakdown-list');
+  if(history.length>0){
+    const scKeys=Object.keys(SCORING);
+    const byScen={};
+    history.forEach(h=>{if(!byScen[h.scenarioKey])byScen[h.scenarioKey]=[];byScen[h.scenarioKey].push(h.score);});
+    const items=scKeys.filter(k=>byScen[k]).map(k=>{
+      const scores=byScen[k];
+      const avg=Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+      return {key:k,title:SC[k].title,avg,count:scores.length};
+    }).sort((a,b)=>b.avg-a.avg).slice(0,4);
+    breakdown.innerHTML=items.map(it=>`
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+          <span style="font-weight:600">${it.title}</span>
+          <span style="color:${it.avg>=70?'var(--success)':it.avg>=45?'var(--amber)':'var(--danger)'};font-weight:700">${it.avg}%</span>
+        </div>
+        <div class="progress-bar"><div class="pf ${it.avg>=70?'':it.avg>=45?'amber':'danger'}" style="width:${it.avg}%"></div></div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${it.count} session${it.count!==1?'s':''}</div>
+      </div>`).join('');
+  } else {
+    breakdown.innerHTML='<div style="font-size:12px;color:var(--text-muted)">Complete sessions to see your breakdown.</div>';
+  }
+
+  updatePBBadges();
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────────
+function renderProgress(){
+  const name=localStorage.getItem('inv_name')||'';
+  const history=getAdviserHistory(name);
+
+  // Stats
+  let statsDiv=document.getElementById('progress-stats');
+  if(!statsDiv){
+    statsDiv=document.createElement('div');statsDiv.id='progress-stats';
+    document.getElementById('view-progress').prepend(statsDiv);
+  }
+  if(history.length>0){
+    const total=history.length;
+    const best=Math.max(...history.map(h=>h.score));
+    const avg=Math.round(history.reduce((a,b)=>a+b.score,0)/total);
+    const sc={};history.forEach(h=>{sc[h.scenario]=(sc[h.scenario]||0)+1;});
+    const fav=Object.entries(sc).sort((a,b)=>b[1]-a[1])[0];
+    statsDiv.innerHTML=`<div class="grid4" style="margin-bottom:16px">
+      <div class="card card-sm card-accent-blue"><div class="stat-label">Total Sessions</div><div class="stat-val">${total}</div></div>
+      <div class="card card-sm card-accent-green"><div class="stat-label">All-Time Best</div><div class="stat-val" style="color:var(--success)">${best}%</div></div>
+      <div class="card card-sm"><div class="stat-label">Average Score</div><div class="stat-val">${avg}%</div></div>
+      <div class="card card-sm card-accent-amber"><div class="stat-label">Favourite Scenario</div><div class="stat-val" style="font-size:12px;padding-top:4px">${fav?fav[0]:'—'}</div><div class="stat-sub">${fav?fav[1]+' plays':''}</div></div>
+    </div>`;
+  } else {statsDiv.innerHTML='';}
+
+  const tbody=document.getElementById('progress-tbody');
+  if(history.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="color:var(--text-muted);text-align:center;padding:16px">No sessions yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML=history.map(s=>`
+    <tr>
+      <td style="font-size:12px">${formatDate(s.date)}</td>
+      <td style="font-size:12px">${s.scenario}</td>
+      <td><span class="badge ${s.score>=70?'badge-green':s.score>=45?'badge-amber':'badge-red'}">${s.score}%</span></td>
+      <td style="font-size:12px">${Math.floor(s.duration/60)}m ${s.duration%60}s</td>
+      <td><span style="color:var(--amber);font-weight:700;font-size:12px">+${s.xpEarned}</span></td>
+    </tr>`).join('');
+}
+
+// ── LEADERBOARD ───────────────────────────────────────────────────────────
+function renderLeaderboard(){
+  const all=JSON.parse(localStorage.getItem('invicta_history')||'[]');
+  const myName=localStorage.getItem('inv_name')||'';
+  const adv={};
+  all.forEach(h=>{
+    if(!adv[h.adviserName])adv[h.adviserName]={name:h.adviserName,sessions:0,total:0,best:0};
+    adv[h.adviserName].sessions++;
+    adv[h.adviserName].total+=h.score;
+    if(h.score>adv[h.adviserName].best)adv[h.adviserName].best=h.score;
+  });
+  const rows=Object.values(adv).map(a=>{
+    a.avg=Math.round(a.total/a.sessions);
+    a.xp=parseInt(localStorage.getItem(getXPKey(a.name))||'0');
+    a.streak=getStreak(a.name);
+    a.info=getLevelInfo(a.xp);
+    return a;
+  }).sort((a,b)=>b.avg-a.avg);
+
+  const tbody=document.getElementById('leaderboard-tbody');
+  const podium=document.getElementById('leaderboard-podium');
+
+  if(rows.length<2){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">No other advisers have trained on this device yet. Share the link with your team.</td></tr>';
+    podium.innerHTML='';return;
+  }
+
+  const medals=['🥇','🥈','🥉'];
+  const top3=rows.slice(0,3);
+  const podiumOrder=[top3[1],top3[0],top3[2]].filter(Boolean);
+  const podiumClasses=['podium-bar-2','podium-bar-1','podium-bar-3'];
+  podium.innerHTML=`<div class="podium-wrap">
+    ${podiumOrder.map((a,i)=>{
+      const rank=a===top3[0]?1:a===top3[1]?2:3;
+      return `<div class="podium-card">
+        <div class="av-circle" style="margin:0 auto 6px">${getInitials(a.name)}</div>
+        <div style="font-size:12px;font-weight:700">${a.name}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">${a.avg}%</div>
+        <div class="${podiumClasses[i]}"><div style="font-size:18px">${medals[rank-1]}</div></div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  tbody.innerHTML=rows.map((a,i)=>`
+    <tr style="${a.name===myName?'background:rgba(46,125,212,0.08)':''}">
+      <td>${i<3?medals[i]:i+1}</td>
+      <td style="font-weight:${a.name===myName?'700':'400'}">${a.name}${a.name===myName?' <span style="font-size:10px;color:var(--blue-500)">(you)</span>':''}</td>
+      <td>${a.info.emoji} ${a.info.name}</td>
+      <td>${a.sessions}</td>
+      <td><span style="color:${a.avg>=70?'var(--success)':a.avg>=45?'var(--amber)':'var(--danger)'};font-weight:700">${a.avg}%</span></td>
+      <td>${a.best}%</td>
+      <td>${a.streak>0?'🔥 '+a.streak:'—'}</td>
+    </tr>`).join('');
+}
+
+// ── MANAGER ───────────────────────────────────────────────────────────────
+function renderManager(){
+  const all=JSON.parse(localStorage.getItem('invicta_history')||'[]');
+  const cardsEl=document.getElementById('manager-cards');
+  if(all.length===0){
+    cardsEl.innerHTML='<div class="card" style="text-align:center;padding:32px;color:var(--text-muted)">No training data yet. Advisers need to complete sessions to appear here.</div>';
+    document.getElementById('mgr-team-avg').textContent='—';
+    document.getElementById('mgr-active').textContent='0';
+    document.getElementById('mgr-sessions').textContent='0';
+    document.getElementById('mgr-attention').textContent='0';
+    return;
+  }
+  const sevenAgo=new Date(Date.now()-7*86400000).toISOString();
+  const recent=all.filter(h=>h.date>sevenAgo);
+  const advMap={};
+  all.forEach(h=>{
+    if(!advMap[h.adviserName])advMap[h.adviserName]={name:h.adviserName,sessions:[],recentSessions:[]};
+    advMap[h.adviserName].sessions.push(h);
+    if(h.date>sevenAgo)advMap[h.adviserName].recentSessions.push(h);
+  });
+  const advArr=Object.values(advMap);
+  const teamAvg=all.length>0?Math.round(all.reduce((a,b)=>a+b.score,0)/all.length):0;
+  const attention=advArr.filter(a=>a.sessions.reduce((s,h)=>s+h.score,0)/a.sessions.length<40).length;
+  document.getElementById('mgr-team-avg').textContent=teamAvg+'%';
+  document.getElementById('mgr-active').textContent=advArr.length;
+  document.getElementById('mgr-sessions').textContent=recent.length;
+  document.getElementById('mgr-attention').textContent=attention;
+
+  cardsEl.innerHTML=advArr.map(a=>{
+    const avg=Math.round(a.sessions.reduce((s,h)=>s+h.score,0)/a.sessions.length);
+    const best=Math.max(...a.sessions.map(h=>h.score));
+    const xp=parseInt(localStorage.getItem(getXPKey(a.name))||'0');
+    const lvl=getLevelInfo(xp);
+    const streak=getStreak(a.name);
+    const last7=a.sessions.slice(0,7).reverse();
+    const miniChart=last7.map(s=>`<div class="mini-bar" style="height:${Math.max(4,Math.round(s.score*44/100))}px;background:${s.score>=70?'var(--success)':s.score>=45?'var(--amber)':'var(--danger)'}" title="${s.score}%"></div>`).join('');
+    return `<div class="card adviser-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="av-circle">${getInitials(a.name)}</div>
+          <div><div style="font-size:14px;font-weight:700">${a.name}</div><div style="font-size:11px;color:var(--text-muted)">${lvl.emoji} ${lvl.name} · ${xp} XP</div></div>
+        </div>
+        <div style="text-align:right"><div style="font-size:20px;font-weight:800;color:${avg>=70?'var(--success)':avg>=45?'var(--amber)':'var(--danger)'}">${avg}%</div><div style="font-size:10px;color:var(--text-muted)">avg</div></div>
+      </div>
+      <div class="grid4" style="margin-bottom:12px;gap:8px">
+        <div style="text-align:center;padding:6px;background:var(--off-white);border-radius:6px"><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Sessions</div><div style="font-size:15px;font-weight:700">${a.sessions.length}</div></div>
+        <div style="text-align:center;padding:6px;background:var(--off-white);border-radius:6px"><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">This Week</div><div style="font-size:15px;font-weight:700">${a.recentSessions.length}</div></div>
+        <div style="text-align:center;padding:6px;background:var(--off-white);border-radius:6px"><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Best</div><div style="font-size:15px;font-weight:700;color:var(--success)">${best}%</div></div>
+        <div style="text-align:center;padding:6px;background:var(--off-white);border-radius:6px"><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Streak</div><div style="font-size:15px;font-weight:700">${streak>0?'🔥'+streak:'—'}</div></div>
+      </div>
+      <div class="mini-chart">${miniChart}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── SCORE SCREEN ACTIONS ──────────────────────────────────────────────────
+function shareResult(){
+  const name=localStorage.getItem('inv_name')||'Adviser';
+  const score=document.getElementById('final-score').textContent;
+  const scenario=document.getElementById('score-sub').textContent.split(' · ')[0];
+  const xp=parseInt(localStorage.getItem(getXPKey(name))||'0');
+  const info=getLevelInfo(xp);
+  const text=`${name} scored ${score} on ${scenario} — ${info.emoji} ${info.name} · Invicta Training Hub 🏆`;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('share-btn');
+    const orig=btn.innerHTML;
+    btn.innerHTML='✓ Copied!';
+    setTimeout(()=>{btn.innerHTML=orig;},1500);
+  }).catch(()=>alert('Copy: '+text));
+}
+
+// NOTE: AI Debrief uses DEMO_KEY — users need their own Anthropic API key
+// Replace 'DEMO_KEY' below with your actual key, or set up a proxy
+async function requestAIDebrief(){
+  const btn=document.getElementById('ai-debrief-btn');
+  const panel=document.getElementById('debrief-panel');
+  btn.innerHTML='<i class="ti ti-loader" style="font-size:12px;margin-right:4px"></i>Loading...';
+  btn.disabled=true;
+  panel.classList.remove('hidden');
+  panel.innerHTML='<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px">Generating debrief...</div>';
+  const score=document.getElementById('final-score').textContent;
+  const scenario=document.getElementById('score-sub').textContent.split(' · ')[0];
+  const transcript=adviserTx.join(' | ')||'No transcript captured';
+  const bkd=Array.from(document.querySelectorAll('#score-breakdown .sc-row')).map(r=>{
+    return (r.querySelector('.sc-row-label')||{}).textContent+': '+(r.querySelector('.sc-row-pts')||{}).textContent;
+  }).join(', ');
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':'DEMO_KEY'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',max_tokens:400,
+        system:'You are a New Zealand financial adviser sales coach. Give sharp, direct feedback. 3 bullet points max. No fluff. NZ English.',
+        messages:[{role:'user',content:`Scenario: ${scenario}\nScore: ${score}\nTranscript: ${transcript}\nCheckpoints: ${bkd}`}]
+      })
+    });
+    if(!resp.ok)throw new Error('API error '+resp.status);
+    const data=await resp.json();
+    const text=(data.content&&data.content[0]&&data.content[0].text)||'No response';
+    const points=text.split('\n').filter(l=>l.trim());
+    panel.innerHTML=points.map(p=>`<div class="debrief-point">${p}</div>`).join('');
+  }catch(e){
+    panel.innerHTML='<div style="color:var(--text-muted);font-size:13px;padding:8px 0">Debrief unavailable — check your connection.</div>';
+  }
+  btn.innerHTML='<i class="ti ti-robot" style="font-size:12px;margin-right:4px"></i>AI Debrief';
+  btn.disabled=false;
+}
+
+function retrySession(){
+  document.getElementById('score-screen').classList.add('hidden');
+  startCall(callScenario);
+}
+function closeScore(){
+  document.getElementById('score-screen').classList.add('hidden');
+  showView('dashboard');
+}
+
+// ── PB BADGES ─────────────────────────────────────────────────────────────
+function updatePBBadges(){
+  const name=localStorage.getItem('inv_name')||'';
+  const history=getAdviserHistory(name);
+  Object.keys(SC).forEach(key=>{
+    const sessions=history.filter(h=>h.scenarioKey===key);
+    const ids=['pb-'+key,'pb-'+key+'-dash'];
+    ids.forEach(id=>{
+      const el=document.getElementById(id);if(!el)return;
+      if(sessions.length>0){
+        const pb=Math.max(...sessions.map(s=>s.score));
+        el.textContent='PB: '+pb+'% · Played '+sessions.length+'×';
+        el.style.color='var(--amber)';
+        el.style.fontWeight='700';
+      }else{
+        el.textContent='Not yet attempted';
+        el.style.color='var(--text-muted)';
+        el.style.fontWeight='400';
+      }
+    });
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+(function init(){
+  const name=localStorage.getItem('inv_name');
+  EL_KEY=localStorage.getItem('inv_el')||'';
+  SEL_VOICE=localStorage.getItem('inv_voice')||'Callum';
+  if(EL_KEY){
+    document.getElementById('sidebar-voice-lbl').textContent='🎙 ElevenLabs · '+SEL_VOICE;
+    document.getElementById('tts-badge').textContent='🎙 ElevenLabs · '+SEL_VOICE;
+    document.getElementById('input-el').value=EL_KEY;
+  }
+  if(name){
+    document.getElementById('login-overlay').classList.add('hidden');
+    updateProfile();
+    renderDashboard();
+  }
+  loadRecentProfiles();
+  // Pre-select saved voice
+  if(SEL_VOICE){
+    document.querySelectorAll('.voice-opt').forEach(o=>{
+      o.classList.toggle('sel',o.dataset.v===SEL_VOICE);
+    });
+  }
+})();
+
+</script>
+</body>
+</html>
