@@ -200,6 +200,16 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
 .card-accent-green{border-top:3px solid var(--success)}
 .card-accent-amber{border-top:3px solid var(--amber)}
 .card-accent-red{border-top:3px solid var(--danger)}
+/* ── MEETING MODE ── */
+.step-done{background:var(--success)!important;border-color:var(--success)!important;color:#fff!important}
+.step-active{background:var(--blue-500)!important;border-color:var(--blue-500)!important;color:#fff!important}
+.meet-sect-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px}
+.meet-sect-table th{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);padding:5px 8px;text-align:left;border-bottom:1px solid var(--border-light)}
+.meet-sect-table td{padding:7px 8px;border-bottom:1px solid var(--border-light)}
+.thinking-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.55);margin:0 2px;animation:td-pulse 1.2s infinite}
+.thinking-dot:nth-child(2){animation-delay:0.2s}
+.thinking-dot:nth-child(3){animation-delay:0.4s}
+@keyframes td-pulse{0%,80%,100%{transform:scale(0.6);opacity:0.3}40%{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
@@ -252,9 +262,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
       <div class="voice-opt" onclick="selVoice(this,'Brian')" data-v="Brian"><div style="font-size:13px;font-weight:600">Brian</div><div style="font-size:11px;color:var(--text-muted)">Male &middot; deep</div></div>
       <div class="voice-opt" onclick="selVoice(this,'Alice')" data-v="Alice"><div style="font-size:13px;font-weight:600">Alice</div><div style="font-size:11px;color:var(--text-muted)">Female &middot; upbeat</div></div>
     </div>
+    <div style="height:14px"></div>
+    <div class="setup-label">Anthropic API Key <span style="font-weight:400;color:var(--text-muted)">(for Full Meeting AI Client)</span></div>
+    <input class="setup-input" type="password" id="input-anthro" placeholder="sk-ant-..." autocomplete="off"/>
+    <div class="setup-note">Get from <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> &rarr; API Keys &mdash; enables the AI client in Full Meeting mode</div>
     <div style="height:18px"></div>
     <button class="btn btn-primary" style="width:100%;padding:12px;font-size:14px" onclick="saveKeys()">Save Settings</button>
-    <div style="text-align:center;margin-top:9px;font-size:12px;color:var(--text-muted)">Key saved in browser only.</div>
+    <div style="text-align:center;margin-top:9px;font-size:12px;color:var(--text-muted)">Keys saved in browser only.</div>
   </div>
 </div>
 
@@ -269,6 +283,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
       <div class="nav-item active" onclick="showView('dashboard')"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
       <div class="nav-item" onclick="showView('practice')"><i class="ti ti-microphone"></i>Practice</div>
       <div class="nav-item" onclick="showView('tasks')"><i class="ti ti-list-check"></i>Tasks <span style="margin-left:auto;background:var(--danger);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700">3</span></div>
+      <div class="nav-item" onclick="showView('meeting')"><i class="ti ti-clipboard-list"></i>Full Meeting</div>
       <div class="nav-item" onclick="showView('progress')"><i class="ti ti-chart-line"></i>Progress</div>
       <div class="nav-item" onclick="showView('leaderboard')"><i class="ti ti-trophy"></i>Leaderboard</div>
       <div class="nav-group-label">Management</div>
@@ -371,13 +386,81 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
       </div>
     </div>
 
+    <!-- FULL MEETING -->
+    <div class="content hidden" id="view-meeting">
+      <div style="margin-bottom:16px;padding:13px 16px;background:var(--blue-50);border:1px solid var(--blue-100);border-radius:var(--radius);display:flex;align-items:flex-start;gap:11px">
+        <i class="ti ti-clipboard-list" style="color:var(--blue-500);font-size:17px;margin-top:1px"></i>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--blue-700)">Full First Meeting &mdash; AI Client Practice</div>
+          <div style="font-size:12px;color:var(--blue-500);margin-top:2px">Claude plays a real NZ client. Practice the full Digital First Script end-to-end, or drill individual sections. Add your Anthropic API key in Settings to enable the AI client.</div>
+        </div>
+      </div>
+      <div class="card" style="border-left:4px solid var(--blue-500);margin-bottom:16px;cursor:pointer" onclick="startMeeting('full')">
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="font-size:32px;margin-top:2px">&#128203;</div>
+          <div style="flex:1">
+            <div style="font-size:16px;font-weight:800;color:var(--blue-900);margin-bottom:4px">Complete First Meeting Run-through</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:8px">AI client takes you through all 6 sections: Opening &rarr; Disclosure &rarr; Scope &rarr; Fact Find 1 &rarr; Fact Find 2 &rarr; Close. Approx 15&ndash;20 minutes. Score is weighted across all sections.</div>
+            <div class="fw-pill">OPENING &rarr; DISCLOSURE &rarr; SCOPE &rarr; FACT FIND 1 &rarr; FACT FIND 2 &rarr; CLOSE</div>
+          </div>
+          <button class="btn btn-primary" style="white-space:nowrap;font-size:13px;flex-shrink:0">Start Meeting</button>
+        </div>
+        <div style="margin-top:10px;font-size:11px;font-weight:600;color:var(--text-muted)" id="pb-meeting-full">Not yet attempted</div>
+      </div>
+      <div class="section-head">Drill a Section</div>
+      <div class="grid3">
+        <div class="sc-card" onclick="startMeeting('opening')">
+          <div class="sc-diff" style="color:var(--success)">20% weight</div>
+          <div class="sc-title">Opening</div>
+          <div class="sc-desc">Greet warmly, introduce yourself, set the agenda, and get permission to take notes. First impressions matter.</div>
+          <div class="fw-pill">WARM &middot; AGENDA &middot; PERMISSION</div>
+          <div class="sc-pb" id="pb-meet-opening" style="color:var(--text-muted)">Not yet attempted</div>
+        </div>
+        <div class="sc-card" onclick="startMeeting('disclosure')">
+          <div class="sc-diff" style="color:var(--amber)">10% weight</div>
+          <div class="sc-title">Disclosure</div>
+          <div class="sc-desc">Explain your role as a financial adviser, the disclosure document, and that there is no cost for the first meeting.</div>
+          <div class="fw-pill">ROLE &middot; DOCUMENT &middot; NO COST</div>
+          <div class="sc-pb" id="pb-meet-disclosure" style="color:var(--text-muted)">Not yet attempted</div>
+        </div>
+        <div class="sc-card" onclick="startMeeting('scope')">
+          <div class="sc-diff" style="color:var(--amber)">10% weight</div>
+          <div class="sc-title">Scope</div>
+          <div class="sc-desc">Find out what brought them in today, what areas they want to cover. Confirm your understanding.</div>
+          <div class="fw-pill">WHY HERE &middot; PRIORITIES &middot; CONFIRM</div>
+          <div class="sc-pb" id="pb-meet-scope" style="color:var(--text-muted)">Not yet attempted</div>
+        </div>
+        <div class="sc-card" onclick="startMeeting('factfind1')">
+          <div class="sc-diff" style="color:var(--danger)">20% weight</div>
+          <div class="sc-title">Fact Find Part 1</div>
+          <div class="sc-desc">Gather family situation, occupation, income, expenses, assets, and liabilities. Build the financial picture.</div>
+          <div class="fw-pill">FAMILY &middot; INCOME &middot; ASSETS &middot; DEBTS</div>
+          <div class="sc-pb" id="pb-meet-factfind1" style="color:var(--text-muted)">Not yet attempted</div>
+        </div>
+        <div class="sc-card" onclick="startMeeting('factfind2')">
+          <div class="sc-diff" style="color:var(--danger)">20% weight</div>
+          <div class="sc-title">Fact Find Part 2</div>
+          <div class="sc-desc">Existing insurance, health history, lifestyle, goals, and biggest concerns. Understand the full risk picture.</div>
+          <div class="fw-pill">COVER &middot; HEALTH &middot; GOALS &middot; CONCERNS</div>
+          <div class="sc-pb" id="pb-meet-factfind2" style="color:var(--text-muted)">Not yet attempted</div>
+        </div>
+        <div class="sc-card" onclick="startMeeting('close')">
+          <div class="sc-diff" style="color:var(--blue-500)">20% weight</div>
+          <div class="sc-title">Close</div>
+          <div class="sc-desc">Summarise findings, explain next steps, book the second meeting, and sign off warmly. Lock in the next appointment.</div>
+          <div class="fw-pill">SUMMARY &middot; NEXT STEPS &middot; BOOK &middot; SIGN-OFF</div>
+          <div class="sc-pb" id="pb-meet-close" style="color:var(--text-muted)">Not yet attempted</div>
+        </div>
+      </div>
+    </div>
+
     <!-- TASKS -->
     <div class="content hidden" id="view-tasks">
       <div class="grid2">
         <div class="card"><div class="section-head">Active Tasks <span class="badge badge-red" style="margin-left:8px">3 due</span></div>
           <div class="task-row"><div class="t-icon" style="background:#FEE2E2;color:var(--danger)"><i class="ti ti-flame"></i></div><div style="flex:1"><div style="font-size:13px;font-weight:600">Practice &ldquo;Can&rsquo;t afford it&rdquo; &times;3</div><div style="font-size:11px;color:var(--danger)">Due today &middot; Auto-assigned &middot; Score 38</div></div><button class="btn btn-primary" style="font-size:12px;padding:5px 10px;margin-left:10px" onclick="startCall('afford')">Start</button></div>
           <div class="task-row"><div class="t-icon" style="background:#FFF8E6;color:var(--amber)"><i class="ti ti-book"></i></div><div style="flex:1"><div style="font-size:13px;font-weight:600">Practice &ldquo;Already sorted&rdquo; &times;2</div><div style="font-size:11px;color:var(--amber)">Due tomorrow &middot; Manager assigned</div></div><button class="btn" style="font-size:12px;padding:5px 10px;margin-left:10px" onclick="startCall('sorted')">Start</button></div>
-          <div class="task-row"><div class="t-icon" style="background:var(--blue-100);color:var(--blue-600)"><i class="ti ti-microphone"></i></div><div style="flex:1"><div style="font-size:13px;font-weight:600">Full first meeting run-through</div><div style="font-size:11px;color:var(--text-muted)">Due Friday &middot; Target 70+</div></div><button class="btn btn-dark" style="font-size:12px;padding:5px 10px;margin-left:10px" onclick="startCall('quote')">Start</button></div>
+          <div class="task-row"><div class="t-icon" style="background:var(--blue-100);color:var(--blue-600)"><i class="ti ti-clipboard-list"></i></div><div style="flex:1"><div style="font-size:13px;font-weight:600">Full first meeting run-through</div><div style="font-size:11px;color:var(--text-muted)">Due Friday &middot; Target 70+</div></div><button class="btn btn-dark" style="font-size:12px;padding:5px 10px;margin-left:10px" onclick="showView('meeting')">Start</button></div>
         </div>
         <div class="card"><div class="section-head">Completed This Week</div>
           <div class="task-row"><div class="t-icon" style="background:#D1FAE5;color:#065F46"><i class="ti ti-check"></i></div><div><div style="font-size:13px;font-weight:600">Opening script &times;5</div><div style="font-size:11px;color:var(--success)">&#10003; Mon &middot; Avg 64</div></div></div>
@@ -466,6 +549,77 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
       <button class="call-icon-btn" id="mute-btn" onclick="toggleMute()" title="Mute mic"><i class="ti ti-volume"></i></button>
       <button class="end-btn" onclick="endCall()"><i class="ti ti-phone-off"></i></button>
       <button class="call-icon-btn" onclick="advanceTurn()" title="Skip to next client line"><i class="ti ti-player-skip-forward"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- MEETING CALL SCREEN -->
+<div class="call-screen hidden" id="meet-screen">
+  <div style="text-align:center">
+    <div class="call-pill" id="meet-pill">OPENING</div>
+    <div class="call-name" id="meet-client-name">Sarah</div>
+    <div class="call-timer" id="meet-timer">0:00</div>
+  </div>
+  <div class="call-mid">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+      <div class="av-wrap">
+        <div class="av-ring r3" id="meet-ring3"></div><div class="av-ring r2" id="meet-ring2"></div><div class="av-ring r1" id="meet-ring1"></div>
+        <div class="av-core"><div class="av-init" id="meet-av-init">S</div></div>
+      </div>
+      <div class="pers-tag" id="meet-pers-tag"></div>
+      <div class="tts-badge" id="meet-tts-badge">&#128266; Browser TTS</div>
+    </div>
+    <div class="step-track" id="meet-step-track" style="grid-template-columns:repeat(6,1fr);gap:4px">
+      <!-- dynamically filled -->
+    </div>
+    <div class="call-status" id="meet-status">Connecting...</div>
+    <div class="wave-row" id="meet-wave-row"><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div></div>
+    <div class="hint-bar" id="meet-hint-bar">
+      <div class="hint-step" id="meet-hint-step">Opening</div>
+      <div class="hint-text" id="meet-hint-text"></div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px" id="meet-turn-count">Turn 1 of 4</div>
+    </div>
+    <div class="tx-box" id="meet-tx-box"><div class="tl" style="color:rgba(255,255,255,0.18);font-size:12px;text-align:center">Transcript will appear here</div></div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div class="mic-wrap">
+      <div class="mic-ring muted" id="meet-mic-ring"><i class="ti ti-microphone"></i></div>
+      <div class="mic-lbl" id="meet-mic-lbl">Waiting...</div>
+    </div>
+    <div class="call-action-row">
+      <button class="call-icon-btn" id="meet-mute-btn" onclick="toggleMeetMute()" title="Mute mic"><i class="ti ti-volume"></i></button>
+      <button class="end-btn" onclick="endMeeting()"><i class="ti ti-phone-off"></i></button>
+      <button class="call-icon-btn" onclick="skipMeetTurn()" title="Skip adviser turn"><i class="ti ti-player-skip-forward"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- MEETING SCORE SCREEN -->
+<div class="score-overlay hidden" id="meet-score-screen">
+  <div class="score-card">
+    <div class="score-hero">
+      <div class="score-ring"><div class="score-num" id="meet-final-score">&mdash;</div></div>
+      <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:4px" id="meet-score-grade">Meeting complete</div>
+      <div style="font-size:12px;color:var(--blue-400)" id="meet-score-sub">&mdash;</div>
+      <div style="margin-top:10px"><span class="xp-badge hidden" id="meet-xp-badge">+50 XP &#9889;</span></div>
+    </div>
+    <div class="score-body">
+      <div style="font-size:13px;font-weight:700;margin-bottom:9px">Section Breakdown</div>
+      <table class="meet-sect-table">
+        <thead><tr><th>Section</th><th>Score</th><th>Weight</th></tr></thead>
+        <tbody id="meet-section-table"></tbody>
+      </table>
+      <div style="font-size:13px;font-weight:700;margin-bottom:9px">What to Fix</div>
+      <div id="meet-fb-list" style="margin-bottom:16px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;margin-top:14px">
+        <button class="btn" style="flex:1" id="meet-share-btn" onclick="shareMeetResult()"><i class="ti ti-share" style="font-size:12px;margin-right:4px"></i>Share Result</button>
+        <button class="btn" style="flex:1" id="meet-ai-debrief-btn" onclick="requestMeetAIDebrief()"><i class="ti ti-robot" style="font-size:12px;margin-right:4px"></i>AI Debrief</button>
+      </div>
+      <div class="debrief-panel hidden" id="meet-debrief-panel"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary" style="flex:1" onclick="retryMeeting()">Try Again</button>
+        <button class="btn btn-dark" style="flex:1" onclick="closeMeetScore()">Back to Meeting</button>
+      </div>
     </div>
   </div>
 </div>
@@ -575,6 +729,8 @@ function saveKeys(){
   if(EL_KEY)localStorage.setItem('inv_el',EL_KEY);
   SEL_VOICE=document.querySelector('.voice-opt.sel')?.dataset.v||'Callum';
   localStorage.setItem('inv_voice',SEL_VOICE);
+  const ak=(document.getElementById('input-anthro')||{}).value||'';
+  if(ak.trim())localStorage.setItem('invicta_anthro_key',ak.trim());
   document.getElementById('setup-overlay').classList.add('hidden');
   document.getElementById('sidebar-voice-lbl').textContent=EL_KEY?'🎙 ElevenLabs · '+SEL_VOICE:'🔊 Browser Voice';
   document.getElementById('tts-badge').textContent=EL_KEY?'🎙 ElevenLabs · '+SEL_VOICE:'🔊 Browser TTS';
@@ -1185,13 +1341,14 @@ function showView(v){
   document.querySelectorAll('.nav-item').forEach(n=>{
     n.classList.toggle('active',!!(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+v+"'")));
   });
-  const titles={dashboard:'Dashboard',practice:'Practice',tasks:'Tasks',progress:'Progress',leaderboard:'Leaderboard',manager:'Team Overview'};
+  const titles={dashboard:'Dashboard',practice:'Practice',meeting:'Full Meeting',tasks:'Tasks',progress:'Progress',leaderboard:'Leaderboard',manager:'Team Overview'};
   document.getElementById('page-title').textContent=titles[v]||v;
   document.title=(titles[v]||v)+' — Invicta Training Hub';
   if(v==='dashboard')renderDashboard();
   if(v==='progress')renderProgress();
   if(v==='leaderboard')renderLeaderboard();
   if(v==='manager')renderManager();
+  if(v==='meeting')updateMeetPBBadges();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────
@@ -1484,6 +1641,534 @@ function closeScore(){
   showView('dashboard');
 }
 
+// ── FULL MEETING MODE ──────────────────────────────────────────────────────
+// localStorage key: invicta_anthro_key (Anthropic API key for AI client)
+// Session scenarioKey: 'meeting_full' | 'meeting_opening' | 'meeting_disclosure' etc.
+
+const MEET_SECTS=[
+  {key:'opening',   label:'Opening',     weight:0.20,turns:4,hint:'Greet warmly, introduce yourself, set agenda, ask permission to take notes'},
+  {key:'disclosure',label:'Disclosure',  weight:0.10,turns:3,hint:'Explain your role, disclosure document, no cost for first meeting'},
+  {key:'scope',     label:'Scope',       weight:0.10,turns:3,hint:'What brings them in today, their priorities, confirm your understanding'},
+  {key:'factfind1', label:'Fact Find 1', weight:0.20,turns:4,hint:'Family situation, occupation, income, expenses, assets, liabilities'},
+  {key:'factfind2', label:'Fact Find 2', weight:0.20,turns:4,hint:'Existing insurance, health, lifestyle, goals, biggest concerns'},
+  {key:'close',     label:'Close',       weight:0.20,turns:4,hint:'Summarise findings, next steps, book second meeting, warm sign-off'},
+];
+
+const MEET_SCORING={
+  opening:[
+    {label:'Used client name',       kw:['sarah','james','aroha','michael','priya','daniel','tane','emma','wei','joshua','ngaio','claire','ravi','sam','hana','ben','lucy','matiu','grace','aaron']},
+    {label:'Introduced yourself',    kw:['my name','im ','i am','adviser','financial adviser','invicta']},
+    {label:'Set meeting agenda',     kw:['agenda','today','run through','cover','go through','structure','talk about']},
+    {label:'Asked to take notes',    kw:['notes','jot','write down','record','mind if','okay if','is it okay']},
+    {label:'Built rapport',          kw:['how are you','great to meet','thanks for coming','appreciate','lovely','good to see','welcome','glad you']},
+  ],
+  disclosure:[
+    {label:'Explained your role',    kw:['financial adviser','advice','recommend','help you','here to help','what i do','what we do']},
+    {label:'Mentioned disclosure',   kw:['disclosure','fap','financial advice provider','document','email you','send you','disclosure doc']},
+    {label:'No cost first meeting',  kw:['no cost','no charge','free','first meeting','no obligation','complimentary','paid by the']},
+    {label:'Explained the process',  kw:['process','how it works','what happens','second meeting','follow up','next step','from here']},
+  ],
+  scope:[
+    {label:'Asked what brought them',kw:['what brings','brought you','reason for','why you','what made you','came in','looking into','prompted']},
+    {label:'Asked about priorities', kw:['priorities','important to you','focus on','most important','want to cover','main thing','top of mind','start with']},
+    {label:'Confirmed understanding',kw:['so you','if i understand','sounds like','hearing','correct me','just to confirm','check i','got that right']},
+  ],
+  factfind1:[
+    {label:'Family situation',       kw:['married','partner','children','kids','family','dependants','single','spouse','de facto','living with']},
+    {label:'Occupation and income',  kw:['occupation','work','job','employed','income','salary','what do you do','earn','role','position','self employed']},
+    {label:'Expenses',               kw:['expenses','spending','outgoings','costs','bills','mortgage','rent','repayments','monthly','weekly','going out']},
+    {label:'Assets',                 kw:['assets','savings','investments','property','kiwisaver','superannuation','shares','own','value']},
+    {label:'Liabilities and debt',   kw:['debt','loan','mortgage','liabilities','owe','finance','credit card','student loan','personal loan','hire purchase']},
+  ],
+  factfind2:[
+    {label:'Existing cover',         kw:['existing','current','already have','insurance','cover','policy','in place','through work','at the moment']},
+    {label:'Health history',         kw:['health','medical','conditions','medication','smoker','non smoker','health history','doctor','surgery','hospital','diagnosis']},
+    {label:'Lifestyle',              kw:['lifestyle','hobbies','sport','activities','outdoor','travel','adventur','rugby','bike','swim','ski','climb']},
+    {label:'Goals',                  kw:['goals','aims','what you want','planning','future','retire','retirement','achieve','financial goals','dream','aim to']},
+    {label:'Concerns',               kw:['concerns','worried','worry','what keeps','scenario','fear','biggest concern','couldnt work','sick','injury','unable to work']},
+  ],
+  close:[
+    {label:'Summarised findings',    kw:['found','summary','to summarise','based on','discussed','key points','covered today','what we talked','so from today']},
+    {label:'Explained next steps',   kw:['next step','what happens','put together','prepare','proposal','recommendation','research','quotes','options','come back with']},
+    {label:'Booked second meeting',  kw:['second meeting','next meeting','book','schedule','appointment','catch up','follow up','when works','available','diary','calendar','lock in']},
+    {label:'Warm sign-off',          kw:['talk soon','looking forward','great meeting','pleasure','thank you for your time','see you','speak soon','chat soon','really good talking']},
+  ],
+};
+
+const MEET_NAMES=['Sarah','James','Aroha','Michael','Priya','Daniel','Tane','Emma','Wei','Joshua','Ngaio','Claire','Ravi','Sam','Hana','Ben','Lucy','Matiu','Grace','Aaron'];
+
+const MEET_FALLBACKS={
+  opening:[
+    "Hi, thanks for calling. What happens in these sorts of meetings?",
+    "Thanks for reaching out. I wasn't sure what to expect.",
+    "Oh okay. I've been meaning to sort some of this stuff out for a while.",
+    "I'm a bit nervous to be honest. I've never spoken to a financial adviser before.",
+    "Yeah, my partner said I should look into this. So here I am."
+  ],
+  disclosure:[
+    "Okay so you don't charge us anything? How does that work then?",
+    "Right, so which companies do you work with?",
+    "And this is just a chat today, right? We're not committing to anything?",
+    "Makes sense. So what exactly are we going to go through today?",
+    "Good to know. I'm glad there's no pressure."
+  ],
+  scope:[
+    "Mainly insurance I think. We've got a mortgage now and it feels like we should sort something.",
+    "Honestly a bit of everything. I don't really know where to start.",
+    "My main concern is income protection. If I couldn't work we'd be in serious trouble.",
+    "We want to make sure the family's covered if something happened to either of us.",
+    "Not sure. What would you normally cover in a first meeting?"
+  ],
+  factfind1:[
+    "We've got two kids, a four-year-old and a seven-year-old.",
+    "I'm a project manager. My partner works part-time as a teacher.",
+    "Our mortgage is about six-fifty. We've got maybe twenty grand in savings.",
+    "The main expense is the mortgage, about three-two a month.",
+    "I've got some KiwiSaver but haven't looked at it in years."
+  ],
+  factfind2:[
+    "Nothing major health-wise. I had a knee operation a couple of years back.",
+    "We don't have any insurance at the moment, which is probably not great.",
+    "I run a bit. My partner does yoga. Nothing too extreme.",
+    "Long-term we'd love to be mortgage-free in ten years.",
+    "My biggest worry is honestly just keeping the house if one of us couldn't work."
+  ],
+  close:[
+    "Yeah that all sounds really good. I think we've covered what we needed to.",
+    "Great. So what happens next then?",
+    "When would we hear back with the options?",
+    "How long does it usually take to put a plan together?",
+    "That was really helpful. Thanks for explaining everything so clearly."
+  ]
+};
+
+// ── Meeting state ──────────────────────────────────────────────────────────
+let meetingHistory=[], meetingSectionIdx=0, meetingTurnInSection=0;
+let meetingMode='full', meetingClientName='', meetingClientProfile=null;
+let meetingRunning=false, meetRecog=null, meetMuted=false;
+let meetSectionTx={opening:[],disclosure:[],scope:[],factfind1:[],factfind2:[],close:[]};
+let meetTimerSecs=0, meetTimerInt=null, meetCallStart=null;
+
+function getAnthroKey(){return localStorage.getItem('invicta_anthro_key')||'';}
+
+function startMeeting(mode){
+  meetingMode=mode;
+  meetingHistory=[];
+  meetingTurnInSection=0;
+  meetMuted=false;
+  meetingClientName=MEET_NAMES[Math.floor(Math.random()*MEET_NAMES.length)];
+  meetingClientProfile=PERS[Math.floor(Math.random()*PERS.length)];
+  meetingRunning=true;
+  meetSectionTx={opening:[],disclosure:[],scope:[],factfind1:[],factfind2:[],close:[]};
+  meetCallStart=new Date();
+  meetingSectionIdx=(mode==='full')?0:Math.max(0,MEET_SECTS.findIndex(s=>s.key===mode));
+
+  clearInterval(meetTimerInt);
+  meetTimerSecs=0;
+  meetTimerInt=setInterval(()=>{
+    meetTimerSecs++;
+    const m=Math.floor(meetTimerSecs/60),s=meetTimerSecs%60;
+    const el=document.getElementById('meet-timer');
+    if(el)el.textContent=m+':'+(s<10?'0':'')+s;
+  },1000);
+
+  document.getElementById('meet-client-name').textContent=meetingClientName;
+  document.getElementById('meet-av-init').textContent=meetingClientName[0];
+  document.getElementById('meet-pers-tag').textContent=meetingClientProfile.tag;
+  document.getElementById('meet-tts-badge').textContent=EL_KEY?'🎙 ElevenLabs · '+SEL_VOICE:'🔊 Browser TTS';
+  document.getElementById('meet-tx-box').innerHTML='<div class="tl" style="color:rgba(255,255,255,0.18);font-size:12px;text-align:center">Transcript will appear here</div>';
+  document.getElementById('meet-score-screen').classList.add('hidden');
+  document.getElementById('meet-screen').classList.remove('hidden');
+
+  updateMeetSectionUI();
+  setMeetMicState('muted');
+
+  showMeetThinking();
+  getMeetClientLine('Start the meeting. As the client, say hello naturally. Keep it brief, 1-2 sentences.')
+    .then(line=>{hideMeetThinking();addMeetTx('CLIENT',line);speakMeetClient(line,()=>startMeetListening());})
+    .catch(()=>{
+      hideMeetThinking();
+      const fb=MEET_FALLBACKS[MEET_SECTS[meetingSectionIdx].key];
+      const line=fb[Math.floor(Math.random()*fb.length)];
+      addMeetTx('CLIENT',line);speakMeetClient(line,()=>startMeetListening());
+    });
+}
+
+function updateMeetSectionUI(){
+  const sect=MEET_SECTS[meetingSectionIdx];
+  const pill=document.getElementById('meet-pill');if(pill)pill.textContent=sect.label.toUpperCase();
+  const hs=document.getElementById('meet-hint-step');if(hs)hs.textContent=sect.label;
+  const ht=document.getElementById('meet-hint-text');if(ht)ht.textContent=sect.hint;
+  const tc=document.getElementById('meet-turn-count');if(tc)tc.textContent='Turn '+(meetingTurnInSection+1)+' of '+sect.turns;
+  const stEl=document.getElementById('meet-step-track');if(!stEl)return;
+  if(meetingMode==='full'){
+    stEl.style.gridTemplateColumns='repeat(6,1fr)';
+    stEl.innerHTML=MEET_SECTS.map((s,i)=>{
+      let cls='step-box';
+      if(i<meetingSectionIdx)cls+=' step-done';
+      else if(i===meetingSectionIdx)cls+=' step-active';
+      const lbl=s.label.replace('Fact Find ','FF');
+      return '<div class="'+cls+'"><div class="sn">'+(i+1)+'</div><div class="sl" style="font-size:9px">'+lbl+'</div></div>';
+    }).join('');
+  }else{
+    stEl.style.gridTemplateColumns='1fr';
+    stEl.innerHTML='<div class="step-box step-active"><div class="sn">1</div><div class="sl">'+sect.label+'</div></div>';
+  }
+}
+
+async function getMeetClientLine(userMsg){
+  const sect=MEET_SECTS[meetingSectionIdx];
+  const attitudes=['cautious but engaged','open and curious','busy but willing','slightly nervous but hopeful','practical and direct'];
+  const attitude=attitudes[Math.floor(Math.random()*attitudes.length)];
+  const sysPrompt='You are '+meetingClientName+', a New Zealander meeting a financial adviser for the first time.\n\nPersonality: '+meetingClientProfile.tag+'. You are '+attitude+'.\nCurrent meeting section: '+sect.label+'.\nGoal of this section: '+sect.hint+'.\n\nRules:\n- Speak naturally as a real NZ person, casual and conversational\n- Keep responses to 1-3 sentences only\n- React to what the adviser said\n- Stay in character throughout\n- In the Close section, once the adviser has summarised and mentioned a next meeting, end with a natural warm sign-off like "talk soon" or "looking forward to it" or "see you then"';
+
+  const key=getAnthroKey();
+  if(!key){
+    const fb=MEET_FALLBACKS[sect.key];
+    return fb[Math.floor(Math.random()*fb.length)];
+  }
+  const messages=[...meetingHistory,{role:'user',content:userMsg}];
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':key},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:120,system:sysPrompt,messages})
+  });
+  if(!resp.ok)throw new Error('API '+resp.status);
+  const data=await resp.json();
+  return (data.content&&data.content[0]&&data.content[0].text)||'Mm hmm, go on.';
+}
+
+function showMeetThinking(){
+  const st=document.getElementById('meet-status');
+  if(st)st.innerHTML='Client thinking <span class="thinking-dot"></span><span class="thinking-dot"></span><span class="thinking-dot"></span>';
+  setMeetRings(false);
+}
+function hideMeetThinking(){
+  const st=document.getElementById('meet-status');if(st)st.textContent='';
+}
+
+function addMeetTx(role,text){
+  const box=document.getElementById('meet-tx-box');if(!box)return;
+  const ph=box.querySelector('.tl');if(ph&&ph.style.textAlign==='center')ph.remove();
+  const div=document.createElement('div');
+  div.className='tl';
+  div.style.cssText=(role==='CLIENT'?'color:rgba(255,255,255,0.9);margin-bottom:8px':'color:var(--blue-200);text-align:right;margin-bottom:8px');
+  div.innerHTML='<span style="font-size:10px;font-weight:700;opacity:0.6;display:block;margin-bottom:2px">'+(role==='CLIENT'?meetingClientName.toUpperCase():'YOU')+'</span>'+text;
+  box.appendChild(div);box.scrollTop=box.scrollHeight;
+  const key=MEET_SECTS[meetingSectionIdx].key;
+  if(role==='YOU'&&meetSectionTx[key]!==undefined)meetSectionTx[key].push(text);
+  if(role==='YOU')meetingHistory.push({role:'user',content:text});
+  else meetingHistory.push({role:'assistant',content:text});
+}
+
+function speakMeetClient(text,cb){
+  setMeetRings(true);
+  const st=document.getElementById('meet-status');if(st)st.textContent=meetingClientName+' is speaking...';
+  if(EL_KEY){
+    const vmap={Callum:'N2lVS1w4EtoT3dr4eOWO',Charlotte:'XB0fDUnXU5powFXDhCwa',Brian:'nPczCjzI2devNBz1zQrb',Alice:'Xb7hH8MSUJpSbSDYk0k2'};
+    const vid=vmap[SEL_VOICE]||vmap['Callum'];
+    fetch('https://api.elevenlabs.io/v1/text-to-speech/'+vid+'/stream',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','xi-api-key':EL_KEY},
+      body:JSON.stringify({text,voice_settings:{stability:meetingClientProfile.s,similarity_boost:meetingClientProfile.y},model_id:'eleven_monolingual_v1'})
+    }).then(r=>r.blob()).then(blob=>{
+      const url=URL.createObjectURL(blob);
+      const audio=new Audio(url);
+      audio.onended=()=>{setMeetRings(false);if(st)st.textContent='Your turn...';URL.revokeObjectURL(url);if(cb)cb();};
+      audio.play().catch(()=>speakMeetFallback(text,cb));
+    }).catch(()=>speakMeetFallback(text,cb));
+  }else{speakMeetFallback(text,cb);}
+}
+
+function speakMeetFallback(text,cb){
+  if(!window.speechSynthesis){setMeetRings(false);const st=document.getElementById('meet-status');if(st)st.textContent='Your turn...';if(cb)cb();return;}
+  window.speechSynthesis.cancel();
+  const utt=new SpeechSynthesisUtterance(text);
+  utt.rate=0.95;utt.pitch=1;
+  const st=document.getElementById('meet-status');
+  utt.onend=()=>{setMeetRings(false);if(st)st.textContent='Your turn...';if(cb)cb();};
+  window.speechSynthesis.speak(utt);
+}
+
+function setMeetRings(on){
+  ['meet-ring1','meet-ring2','meet-ring3'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',on);});
+}
+
+function setMeetMicState(state){
+  const ring=document.getElementById('meet-mic-ring');
+  const lbl=document.getElementById('meet-mic-lbl');
+  const wave=document.getElementById('meet-wave-row');
+  if(ring)ring.className='mic-ring '+(state==='listening'?'listening':'muted');
+  if(lbl)lbl.textContent=state==='listening'?'Listening...':'Mic off';
+  if(wave){
+    wave.style.opacity=state==='listening'?'1':'0';
+    wave.querySelectorAll('.wb').forEach(b=>{b.className='wb'+(state==='listening'?' live':'');});
+  }
+}
+
+function startMeetListening(){
+  if(!meetingRunning)return;
+  setMeetMicState('listening');
+  const st=document.getElementById('meet-status');if(st)st.textContent='Listening...';
+  if(!('SpeechRecognition' in window||'webkitSpeechRecognition' in window)){
+    if(st)st.textContent='Voice not supported — use Skip button';return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  meetRecog=new SR();
+  meetRecog.lang='en-NZ';meetRecog.continuous=false;meetRecog.interimResults=false;
+  meetRecog.onresult=e=>{
+    const txt=Array.from(e.results).map(r=>r[0].transcript).join(' ').trim();
+    if(txt&&meetingRunning)onMeetAdviserSpoke(txt);
+  };
+  meetRecog.onerror=e=>{if(e.error!=='no-speech')console.warn('meet-recog:',e.error);};
+  meetRecog.onend=()=>{if(meetingRunning&&!meetMuted)startMeetListening();};
+  try{meetRecog.start();}catch(e){}
+}
+
+function stopMeetListening(){
+  if(meetRecog){try{meetRecog.stop();}catch(e){}meetRecog=null;}
+  setMeetMicState('muted');
+}
+
+function onMeetAdviserSpoke(txt){
+  if(!meetingRunning)return;
+  stopMeetListening();
+  addMeetTx('YOU',txt);
+  meetingTurnInSection++;
+  const sect=MEET_SECTS[meetingSectionIdx];
+  const tc=document.getElementById('meet-turn-count');
+  if(tc)tc.textContent='Turn '+Math.min(meetingTurnInSection+1,sect.turns)+' of '+sect.turns;
+
+  const isLastTurn=meetingTurnInSection>=sect.turns;
+  const isLastSection=(meetingMode==='full')?(meetingSectionIdx>=MEET_SECTS.length-1):true;
+  const endPhrases=['talk soon','looking forward to it','see you then','goodbye','speak soon','chat soon'];
+  const closeSection=sect.key==='close';
+
+  showMeetThinking();
+  getMeetClientLine(txt).then(clientLine=>{
+    hideMeetThinking();
+    addMeetTx('CLIENT',clientLine);
+    const clientLc=clientLine.toLowerCase();
+    const clientEnds=closeSection&&endPhrases.some(p=>clientLc.includes(p));
+
+    if(clientEnds){
+      speakMeetClient(clientLine,()=>{meetingRunning=false;endMeeting();});
+    }else if(isLastTurn&&isLastSection){
+      speakMeetClient(clientLine,()=>{meetingRunning=false;endMeeting();});
+    }else if(isLastTurn){
+      speakMeetClient(clientLine,()=>advanceMeetSection());
+    }else{
+      speakMeetClient(clientLine,()=>startMeetListening());
+    }
+  }).catch(()=>{
+    hideMeetThinking();
+    const fb=MEET_FALLBACKS[sect.key];
+    const fallback=fb[Math.floor(Math.random()*fb.length)];
+    addMeetTx('CLIENT',fallback);
+    if(isLastTurn&&isLastSection){speakMeetClient(fallback,()=>{meetingRunning=false;endMeeting();});}
+    else if(isLastTurn){speakMeetClient(fallback,()=>advanceMeetSection());}
+    else{speakMeetClient(fallback,()=>startMeetListening());}
+  });
+}
+
+function advanceMeetSection(){
+  meetingSectionIdx++;
+  meetingTurnInSection=0;
+  if(meetingSectionIdx>=MEET_SECTS.length){endMeeting();return;}
+  updateMeetSectionUI();
+  const sect=MEET_SECTS[meetingSectionIdx];
+  showMeetThinking();
+  getMeetClientLine('We are now moving to the '+sect.label+' part of the meeting. As the client, respond naturally to this transition.')
+    .then(line=>{hideMeetThinking();addMeetTx('CLIENT',line);speakMeetClient(line,()=>startMeetListening());})
+    .catch(()=>{
+      hideMeetThinking();
+      const fb=MEET_FALLBACKS[sect.key];
+      const line=fb[Math.floor(Math.random()*fb.length)];
+      addMeetTx('CLIENT',line);speakMeetClient(line,()=>startMeetListening());
+    });
+}
+
+function skipMeetTurn(){
+  if(!meetingRunning)return;
+  stopMeetListening();
+  if(window.speechSynthesis)window.speechSynthesis.cancel();
+  onMeetAdviserSpoke('[adviser skipped]');
+}
+
+function toggleMeetMute(){
+  meetMuted=!meetMuted;
+  const btn=document.getElementById('meet-mute-btn');
+  if(btn){btn.classList.toggle('muted-on',meetMuted);btn.querySelector('i').className=meetMuted?'ti ti-volume-off':'ti ti-volume';}
+  if(meetMuted)stopMeetListening();
+  else if(meetingRunning)startMeetListening();
+}
+
+function endMeeting(){
+  meetingRunning=false;
+  clearInterval(meetTimerInt);
+  stopMeetListening();
+  if(window.speechSynthesis)window.speechSynthesis.cancel();
+  document.getElementById('meet-screen').classList.add('hidden');
+  showMeetScore();
+}
+
+function showMeetScore(){
+  const name=localStorage.getItem('inv_name')||'Adviser';
+  const m=Math.floor(meetTimerSecs/60),s=meetTimerSecs%60;
+  const duration=m+'m '+(s<10?'0':'')+s+'s';
+
+  // Score each section
+  let totalWeighted=0,totalWeight=0;
+  const sectionScores={};
+  MEET_SECTS.forEach(sect=>{
+    if(meetingMode!=='full'&&sect.key!==meetingMode)return;
+    const tx=(meetSectionTx[sect.key]||[]).join(' ').toLowerCase();
+    const checks=MEET_SCORING[sect.key]||[];
+    let hit=0;
+    checks.forEach(c=>{if(c.kw.some(k=>tx.includes(k)))hit++;});
+    const pct=checks.length>0?Math.round((hit/checks.length)*100):0;
+    sectionScores[sect.key]=pct;
+    const w=meetingMode==='full'?sect.weight:1;
+    totalWeighted+=pct*w;totalWeight+=w;
+  });
+  const overall=totalWeight>0?Math.round(totalWeighted/totalWeight):0;
+
+  // Save session
+  const xpBase=meetingMode==='full'?50:25;
+  const xpEarned=Math.round((overall/100)*xpBase)+5;
+  const scenarioKey=meetingMode==='full'?'meeting_full':'meeting_'+meetingMode;
+  const scenarioLabel=meetingMode==='full'?'Full First Meeting':('Meeting: '+(MEET_SECTS.find(s=>s.key===meetingMode)||{label:meetingMode}).label);
+  saveSession({adviserName:name,scenario:'📋 '+scenarioLabel,scenarioKey,score:overall,duration,date:new Date().toISOString(),xpEarned});
+
+  const xp=parseInt(localStorage.getItem(getXPKey(name))||'0');
+  const prevLvl=getLevelInfo(xp);
+  const newXP=xp+xpEarned;
+  localStorage.setItem(getXPKey(name),newXP);
+  const newLvl=getLevelInfo(newXP);
+
+  // Populate score screen
+  document.getElementById('meet-final-score').textContent=overall+'%';
+  document.getElementById('meet-score-grade').textContent=overall>=80?'Excellent!':overall>=65?'Good meeting':overall>=50?'Decent effort':'Needs more work';
+  document.getElementById('meet-score-sub').textContent='📋 '+scenarioLabel+' · '+duration+' · '+meetingClientName;
+  const badge=document.getElementById('meet-xp-badge');
+  if(badge){badge.textContent='+'+xpEarned+' XP ⚡';badge.classList.remove('hidden');}
+
+  // Section breakdown table
+  const tbody=document.getElementById('meet-section-table');
+  if(tbody){
+    tbody.innerHTML=MEET_SECTS.filter(s=>meetingMode==='full'||s.key===meetingMode).map(s=>{
+      const sc=sectionScores[s.key]??0;
+      const col=sc>=70?'var(--success)':sc>=45?'var(--amber)':'var(--danger)';
+      return '<tr><td style="font-weight:600">'+s.label+'</td><td><span style="color:'+col+';font-weight:700">'+sc+'%</span></td><td style="color:var(--text-muted)">'+Math.round(s.weight*100)+'%</td></tr>';
+    }).join('');
+  }
+
+  // What to Fix (sections <60%)
+  const fbEl=document.getElementById('meet-fb-list');
+  if(fbEl){
+    const fixes=MEET_SECTS.filter(s=>{
+      if(meetingMode!=='full'&&s.key!==meetingMode)return false;
+      return (sectionScores[s.key]??0)<60;
+    });
+    if(fixes.length===0){
+      fbEl.innerHTML='<div style="color:var(--success);font-size:13px;font-weight:600">✓ All sections scored 60%+</div>';
+    }else{
+      fbEl.innerHTML=fixes.map(s=>{
+        const tx=(meetSectionTx[s.key]||[]).join(' ').toLowerCase();
+        const missed=(MEET_SCORING[s.key]||[]).filter(c=>!c.kw.some(k=>tx.includes(k)));
+        return '<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:var(--danger);margin-bottom:4px">'+s.label+' ('+( sectionScores[s.key]??0)+'%)</div>'+missed.map(m=>'<div style="font-size:12px;color:var(--text-muted);padding:2px 0">✗ '+m.label+'</div>').join('')+'</div>';
+      }).join('');
+    }
+  }
+
+  const dp=document.getElementById('meet-debrief-panel');
+  if(dp){dp.innerHTML='';dp.classList.add('hidden');}
+  document.getElementById('meet-score-screen').classList.remove('hidden');
+
+  if(newLvl.level>prevLvl.level){
+    const lo=document.getElementById('levelup-overlay');
+    if(lo){
+      document.getElementById('lu-emoji').textContent=newLvl.emoji;
+      document.getElementById('lu-level').textContent=newLvl.name;
+      document.getElementById('lu-title').textContent='Level '+newLvl.level;
+      lo.classList.remove('hidden');
+    }
+  }
+  updateSidebarXP();
+  updatePBBadges();
+  updateMeetPBBadges();
+}
+
+function updateMeetPBBadges(){
+  const name=localStorage.getItem('inv_name')||'';
+  const history=getAdviserHistory(name);
+  const fullEl=document.getElementById('pb-meeting-full');
+  if(fullEl){
+    const fs=history.filter(h=>h.scenarioKey==='meeting_full');
+    if(fs.length>0){const pb=Math.max(...fs.map(s=>s.score));fullEl.textContent='PB: '+pb+'% · Played '+fs.length+'×';fullEl.style.color='var(--amber)';fullEl.style.fontWeight='700';}
+    else{fullEl.textContent='Not yet attempted';fullEl.style.color='var(--text-muted)';fullEl.style.fontWeight='400';}
+  }
+  MEET_SECTS.forEach(s=>{
+    const el=document.getElementById('pb-meet-'+s.key);if(!el)return;
+    const ss=history.filter(h=>h.scenarioKey==='meeting_'+s.key);
+    if(ss.length>0){const pb=Math.max(...ss.map(h=>h.score));el.textContent='PB: '+pb+'% · Played '+ss.length+'×';el.style.color='var(--amber)';el.style.fontWeight='700';}
+    else{el.textContent='Not yet attempted';el.style.color='var(--text-muted)';el.style.fontWeight='400';}
+  });
+}
+
+function retryMeeting(){
+  document.getElementById('meet-score-screen').classList.add('hidden');
+  startMeeting(meetingMode);
+}
+function closeMeetScore(){
+  document.getElementById('meet-score-screen').classList.add('hidden');
+  showView('meeting');
+}
+function shareMeetResult(){
+  const name=localStorage.getItem('inv_name')||'Adviser';
+  const score=document.getElementById('meet-final-score').textContent;
+  const sub=document.getElementById('meet-score-sub').textContent.split(' · ')[0];
+  const xp=parseInt(localStorage.getItem(getXPKey(name))||'0');
+  const info=getLevelInfo(xp);
+  const text=name+' scored '+score+' on '+sub+' — '+info.emoji+' '+info.name+' · Invicta Training Hub 🏆';
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('meet-share-btn');
+    const orig=btn.innerHTML;btn.innerHTML='✓ Copied!';setTimeout(()=>{btn.innerHTML=orig;},1500);
+  }).catch(()=>alert('Copy: '+text));
+}
+
+async function requestMeetAIDebrief(){
+  const btn=document.getElementById('meet-ai-debrief-btn');
+  const panel=document.getElementById('meet-debrief-panel');
+  btn.innerHTML='<i class="ti ti-loader" style="font-size:12px;margin-right:4px"></i>Loading...';
+  btn.disabled=true;
+  panel.classList.remove('hidden');
+  panel.innerHTML='<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px">Generating debrief...</div>';
+  const score=document.getElementById('meet-final-score').textContent;
+  const sub=document.getElementById('meet-score-sub').textContent;
+  const transcript=Object.entries(meetSectionTx).filter(([,v])=>v.length>0).map(([k,v])=>k+': '+v.join(' | ')).join('\n')||'No transcript captured';
+  const key=getAnthroKey()||'DEMO_KEY';
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':key},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',max_tokens:450,
+        system:'You are a New Zealand financial adviser sales coach. Give sharp, direct feedback on a full first client meeting. 4 bullet points max. NZ English. Be specific to what you heard in the transcript.',
+        messages:[{role:'user',content:'Session: '+sub+'\nScore: '+score+'\nTranscript:\n'+transcript}]
+      })
+    });
+    if(!resp.ok)throw new Error('API '+resp.status);
+    const data=await resp.json();
+    const text=(data.content&&data.content[0]&&data.content[0].text)||'No response';
+    panel.innerHTML=text.split('\n').filter(l=>l.trim()).map(p=>'<div class="debrief-point">'+p+'</div>').join('');
+  }catch(e){
+    panel.innerHTML='<div style="color:var(--text-muted);font-size:13px;padding:8px 0">Debrief unavailable — add your Anthropic key in Settings to enable.</div>';
+  }
+  btn.innerHTML='<i class="ti ti-robot" style="font-size:12px;margin-right:4px"></i>AI Debrief';
+  btn.disabled=false;
+}
+
 // ── PB BADGES ─────────────────────────────────────────────────────────────
 function updatePBBadges(){
   const name=localStorage.getItem('inv_name')||'';
@@ -1512,6 +2197,8 @@ function updatePBBadges(){
   const name=localStorage.getItem('inv_name');
   EL_KEY=localStorage.getItem('inv_el')||'';
   SEL_VOICE=localStorage.getItem('inv_voice')||'Callum';
+  const ak=localStorage.getItem('invicta_anthro_key')||'';
+  if(ak){const ai=document.getElementById('input-anthro');if(ai)ai.value=ak;}
   if(EL_KEY){
     document.getElementById('sidebar-voice-lbl').textContent='🎙 ElevenLabs · '+SEL_VOICE;
     document.getElementById('tts-badge').textContent='🎙 ElevenLabs · '+SEL_VOICE;
