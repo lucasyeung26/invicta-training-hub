@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#0A1628"/>
 <title>Invicta Training Hub</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /*
  * Invicta Financial — Adviser Training Hub
@@ -219,7 +220,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
   <div class="login-card">
     <div style="margin-bottom:20px;text-align:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1202 466" fill="#1b2d5c" style="width:180px;height:auto;display:block;margin:0 auto"><path d="M234.841,99.159C161.041,99.159,101,159.2,101,233s60.041,133.843,133.841,133.843S368.682,306.8,368.682,233,308.641,99.159,234.841,99.159Zm86.677,53.307a150.917,150.917,0,0,0-78.3,64.418c-1.643,2.738-3.179,5.544-4.65,8.391H206.652a179.251,179.251,0,0,1,15.714-29.524q2.049-3.114,4.229-6.131c2.2-3.064,4.472-6.076,6.859-8.992a181.035,181.035,0,0,1,21.982-22.5q6.024-5.189,12.495-9.841a179.85,179.85,0,0,1,28.192-16.555A119.214,119.214,0,0,1,321.518,152.466ZM290.413,337.5a151.839,151.839,0,0,0-15-5.109c-.765-.214-1.522-.45-2.293-.652-4.246-1.117-8.573-2.028-12.957-2.774a150.645,150.645,0,0,0-18.825-2.006c-2.155-.092-4.315-.164-6.493-.164-1.706,0-3.394.072-5.086.129-1.416.047-2.83.1-4.237.188-2.162.133-4.318.289-6.455.513-2.375.248-4.736.544-7.076.9a149.437,149.437,0,0,0-15.113,3.124q-3.762.981-7.445,2.156-3.7,1.174-7.32,2.538c-.964.362-1.908.763-2.863,1.143a119,119,0,0,1-26.755-19.545,177.663,177.663,0,0,1,19.539-8.719c1.95-.73,3.926-1.4,5.907-2.067q3.745-1.255,7.563-2.347c2-.574,4.011-1.134,6.042-1.639.523-.13,1.053-.24,1.578-.365a178.667,178.667,0,0,1,28.822-4.432c.569-.041,1.134-.095,1.7-.13,2.081-.129,4.175-.2,6.274-.26,1.64-.044,3.271-.125,4.921-.125.851,0,1.689.053,2.537.065.8.011,1.6.039,2.4.061a179.337,179.337,0,0,1,26.662,2.716c.771.137,1.544.267,2.312.414q6.842,1.314,13.49,3.142c.513.141,1.022.292,1.533.437a178.282,178.282,0,0,1,31.183,12.1c.747.374,1.478.775,2.217,1.162A118.99,118.99,0,0,1,290.413,337.5Zm-173.687-96.78H227.118v41.889q-2.418.094-4.817.251a194.513,194.513,0,0,0-25.321,3.273c-1.307.259-2.6.546-3.9.83-2.606.572-5.2,1.169-7.77,1.844-1.89.5-3.757,1.049-5.624,1.6-.716.211-1.443.394-2.155.613a193.476,193.476,0,0,0-35.679,15.128A117.751,117.751,0,0,1,116.726,240.722Zm0-15.447a117.543,117.543,0,0,1,6.292-31.1,90.5,90.5,0,0,1,15.492,31.1Zm131.7-81.5A196.863,196.863,0,0,0,226.7,164.793a195.529,195.529,0,0,0-29.268-44.1,117.657,117.657,0,0,1,32.36-5.963A224.011,224.011,0,0,1,248.428,143.778ZM215.8,178.161a195.189,195.189,0,0,0-19.369,32.123,150.637,150.637,0,0,0-38.66-67.05,118.794,118.794,0,0,1,24.477-16.265A180.037,180.037,0,0,1,215.8,178.161ZM327.624,305.943q-8.193-4.452-16.842-8.127a193.55,193.55,0,0,0-23.909-8.295c-1.66-.46-3.319-.918-5-1.335q-4.978-1.238-10.058-2.209-2.583-.5-5.189-.929a195.16,195.16,0,0,0-23.6-2.425c-.155-.007-.311-.006-.466-.012V240.722H352.956a117.749,117.749,0,0,1-25.078,65.367C327.792,306.042,327.71,305.99,327.624,305.943Zm-14.235-80.668a90.454,90.454,0,0,1,36.759-19.036,117.779,117.779,0,0,1,2.808,19.036Zm-21.734,0H256.2A135.871,135.871,0,0,1,331.85,165.25a118.2,118.2,0,0,1,13.817,26.139A106.384,106.384,0,0,0,291.655,225.275ZM249.348,115.526a117.387,117.387,0,0,1,29.616,7.641,193.876,193.876,0,0,0-18.073,11.185C257.337,127.883,253.467,121.614,249.348,115.526ZM146.713,154.043a134.938,134.938,0,0,1,37.241,71.232H154.431A106.076,106.076,0,0,0,129.9,178.287,118.9,118.9,0,0,1,146.713,154.043ZM201.2,346.5q.332-.081.663-.165c2.706-.681,5.451-1.259,8.219-1.774,3.9-.725,7.847-1.3,11.854-1.683,2.6-.247,5.23-.406,7.874-.5,1.673-.062,3.346-.128,5.035-.128,3.887,0,7.726.2,11.531.526,2.545.216,5.073.494,7.577.85a134.252,134.252,0,0,1,14.47,2.9A117.994,117.994,0,0,1,201.2,346.5Z"/><rect x="436.092" y="136.162" width="18.363" height="98.116" rx="2.663"/><path d="M582.576,235.679a2.636,2.636,0,0,0,2.663-2.523V138.825a2.758,2.758,0,0,0-2.663-2.663H569.681a2.662,2.662,0,0,0-2.662,2.663v57.887h-.139l-58.31-61.951h-3.506a2.634,2.634,0,0,0-2.663,2.524v94.331a2.757,2.757,0,0,0,2.663,2.662H517.82a2.658,2.658,0,0,0,2.662-2.662V171.344h.143l58.588,64.335Z"/><path d="M663.754,234.139a2.521,2.521,0,0,0,2.384,1.54h1.4a2.522,2.522,0,0,0,2.384-1.54l43.452-94.331a2.477,2.477,0,0,0-2.384-3.646H696.7a2.578,2.578,0,0,0-2.385,1.54L667.4,197.974h-.983L639.505,137.7a2.572,2.572,0,0,0-2.38-1.54h-14.3a2.474,2.474,0,0,0-2.38,3.646Z"/><rect x="748.577" y="136.162" width="18.359" height="98.116" rx="2.663"/><path d="M858.335,235.679A48.12,48.12,0,0,0,892.4,222.084a2.671,2.671,0,0,0,.139-3.785l-8.692-8.971a2.585,2.585,0,0,0-3.5,0A33.654,33.654,0,0,1,858.9,217.32c-17.941,0-31.4-14.861-31.4-32.38,0-17.663,13.317-32.659,31.258-32.659a33.164,33.164,0,0,1,21.587,8.27,2.242,2.242,0,0,0,3.5,0l8.553-8.832a2.606,2.606,0,0,0-.144-3.924c-9.528-8.548-19.76-13.034-33.92-13.034a50.459,50.459,0,1,0,0,100.918Z"/><path d="M964.741,231.616V152.981h21.447a2.662,2.662,0,0,0,2.663-2.662V138.825a2.662,2.662,0,0,0-2.663-2.663H924.934a2.662,2.662,0,0,0-2.662,2.663v11.494a2.662,2.662,0,0,0,2.662,2.662h21.448v78.635a2.756,2.756,0,0,0,2.662,2.662h13.034A2.757,2.757,0,0,0,964.741,231.616Z"/><path d="M1100.718,230.633l-43.17-94.332a2.388,2.388,0,0,0-2.384-1.54h-1.4a2.523,2.523,0,0,0-2.384,1.54l-43.592,94.332a2.477,2.477,0,0,0,2.384,3.645h12.195a4.225,4.225,0,0,0,4.063-2.8l6.87-15.139h41.908l6.869,15.139c.983,1.962,1.962,2.8,4.067,2.8h12.195A2.473,2.473,0,0,0,1100.718,230.633Zm-60.55-29.853,13.734-30.837h.422l14.017,30.837Z"/><path d="M472.855,279.2h-35.1a1.667,1.667,0,0,0-1.668,1.667v58.087a1.664,1.664,0,0,0,1.668,1.667h5.7a1.726,1.726,0,0,0,1.668-1.667V315.882h23.425a1.726,1.726,0,0,0,1.668-1.667v-4.828a1.726,1.726,0,0,0-1.668-1.667H445.131V287.454h27.724a1.666,1.666,0,0,0,1.667-1.667v-4.916A1.666,1.666,0,0,0,472.855,279.2Z"/><rect x="499.775" y="279.204" width="9.126" height="61.421" rx="1.668"/><path d="M589.263,279.2h-5.616a1.667,1.667,0,0,0-1.668,1.667v41.5h-.087l-38.084-44.046h-2.193a1.651,1.651,0,0,0-1.667,1.58v59.05a1.726,1.726,0,0,0,1.667,1.667h5.528a1.664,1.664,0,0,0,1.668-1.667V296.226h.087l38.08,45.275h2.285a1.649,1.649,0,0,0,1.667-1.576V280.871A1.729,1.729,0,0,0,589.263,279.2Z"/><path d="M644.515,279.291a2.054,2.054,0,0,0-1.492-.963h-.876a2.047,2.047,0,0,0-1.492.963l-26.94,59.054a1.549,1.549,0,0,0,1.492,2.28h5.528a2.2,2.2,0,0,0,2.018-1.317c1.755-4.036,3.6-7.984,5.353-12.019H656.8l5.441,12.019a2.046,2.046,0,0,0,2.018,1.317h5.527a1.549,1.549,0,0,0,1.493-2.28Zm-12.986,40.452L642.235,295.7h.438l10.793,24.043Z"/><path d="M743.38,279.2h-5.616a1.67,1.67,0,0,0-1.668,1.667v41.5h-.087l-38.08-44.046h-2.193a1.648,1.648,0,0,0-1.667,1.58v59.05a1.723,1.723,0,0,0,1.667,1.667h5.528a1.666,1.666,0,0,0,1.668-1.667V296.226h.088L741.1,341.5h2.281a1.647,1.647,0,0,0,1.667-1.576V280.871A1.726,1.726,0,0,0,743.38,279.2Z"/><path d="M820.661,326.676a1.6,1.6,0,0,0-2.109.087c-4.211,3.244-8.684,5.791-15.092,5.791-12.545,0-22.108-10.443-22.108-22.725s9.476-22.817,22.02-22.817a23.8,23.8,0,0,1,15.18,5.879c.792.792,1.58.792,2.2,0l3.86-3.948a1.631,1.631,0,0,0-.088-2.456c-5.969-5.178-12.373-8.159-21.236-8.159a31.587,31.587,0,1,0,0,63.173,30.113,30.113,0,0,0,21.324-8.509,1.672,1.672,0,0,0,.088-2.368Z"/><rect x="851.171" y="279.204" width="9.126" height="61.421" rx="1.668"/><path d="M913.894,279.291a2.05,2.05,0,0,0-1.489-.963h-.879a2.057,2.057,0,0,0-1.493.963L883.1,338.345a1.55,1.55,0,0,0,1.493,2.28h5.528a2.2,2.2,0,0,0,2.018-1.317c1.755-4.036,3.6-7.984,5.353-12.019H926.18l5.44,12.019a2.04,2.04,0,0,0,2.018,1.317h5.528a1.549,1.549,0,0,0,1.493-2.28Zm-12.987,40.452L911.613,295.7h.438l10.794,24.043Z"/><path d="M996.353,332.467h-23.78v-51.6a1.726,1.726,0,0,0-1.667-1.667h-5.791a1.67,1.67,0,0,0-1.668,1.667v58.087a1.667,1.667,0,0,0,1.668,1.667h31.238a1.667,1.667,0,0,0,1.668-1.667v-4.824A1.667,1.667,0,0,0,996.353,332.467Z"/></svg></div>
     <div style="font-size:21px;font-weight:800;color:var(--blue-900);margin-bottom:7px">Welcome to Invicta Training Hub</div>
-    <div style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:22px">The fastest way to sharpen your skills. Practice objection handling, run full meeting simulations, and track your progress &mdash; all before you pick up a real call.</div>
+    <div style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:22px">Sharpen your skills before you pick up the phone. The fastest advisers are the ones who practise.</div>
     <div class="setup-label">Your Full Name</div>
     <input class="setup-input" type="text" id="input-name" placeholder="e.g. Jamie Turner" style="font-family:inherit" autocomplete="name"/>
     <div style="font-size:12px;color:var(--text-muted);margin-top:5px;margin-bottom:2px">Your progress saves to this browser. No account needed.</div>
@@ -239,6 +240,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
         <div style="font-size:11px;color:var(--text-muted);margin-top:2px">View team overview</div>
       </div>
     </div>
+    <div style="height:12px"></div>
+    <div class="setup-label">Your Office</div>
+    <select id="input-office" class="setup-input" style="font-family:inherit">
+      <option value="Auckland">Auckland</option>
+      <option value="Wellington">Wellington</option>
+      <option value="Christchurch">Christchurch</option>
+      <option value="Philippines">Philippines</option>
+    </select>
     <div style="margin-top:16px;margin-bottom:16px;padding:12px 14px;background:var(--off-white);border-radius:var(--radius-sm);border:1px solid var(--border-light)">
       <div style="font-size:13px;color:var(--text-muted);line-height:2">
         <div>&#9989; Voice roleplay with a simulated client</div>
@@ -268,6 +277,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
     <div class="sidebar-logo-wrap">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1202 466" fill="#fff" style="width:120px;height:auto;display:block"><path d="M234.841,99.159C161.041,99.159,101,159.2,101,233s60.041,133.843,133.841,133.843S368.682,306.8,368.682,233,308.641,99.159,234.841,99.159Zm86.677,53.307a150.917,150.917,0,0,0-78.3,64.418c-1.643,2.738-3.179,5.544-4.65,8.391H206.652a179.251,179.251,0,0,1,15.714-29.524q2.049-3.114,4.229-6.131c2.2-3.064,4.472-6.076,6.859-8.992a181.035,181.035,0,0,1,21.982-22.5q6.024-5.189,12.495-9.841a179.85,179.85,0,0,1,28.192-16.555A119.214,119.214,0,0,1,321.518,152.466ZM290.413,337.5a151.839,151.839,0,0,0-15-5.109c-.765-.214-1.522-.45-2.293-.652-4.246-1.117-8.573-2.028-12.957-2.774a150.645,150.645,0,0,0-18.825-2.006c-2.155-.092-4.315-.164-6.493-.164-1.706,0-3.394.072-5.086.129-1.416.047-2.83.1-4.237.188-2.162.133-4.318.289-6.455.513-2.375.248-4.736.544-7.076.9a149.437,149.437,0,0,0-15.113,3.124q-3.762.981-7.445,2.156-3.7,1.174-7.32,2.538c-.964.362-1.908.763-2.863,1.143a119,119,0,0,1-26.755-19.545,177.663,177.663,0,0,1,19.539-8.719c1.95-.73,3.926-1.4,5.907-2.067q3.745-1.255,7.563-2.347c2-.574,4.011-1.134,6.042-1.639.523-.13,1.053-.24,1.578-.365a178.667,178.667,0,0,1,28.822-4.432c.569-.041,1.134-.095,1.7-.13,2.081-.129,4.175-.2,6.274-.26,1.64-.044,3.271-.125,4.921-.125.851,0,1.689.053,2.537.065.8.011,1.6.039,2.4.061a179.337,179.337,0,0,1,26.662,2.716c.771.137,1.544.267,2.312.414q6.842,1.314,13.49,3.142c.513.141,1.022.292,1.533.437a178.282,178.282,0,0,1,31.183,12.1c.747.374,1.478.775,2.217,1.162A118.99,118.99,0,0,1,290.413,337.5Zm-173.687-96.78H227.118v41.889q-2.418.094-4.817.251a194.513,194.513,0,0,0-25.321,3.273c-1.307.259-2.6.546-3.9.83-2.606.572-5.2,1.169-7.77,1.844-1.89.5-3.757,1.049-5.624,1.6-.716.211-1.443.394-2.155.613a193.476,193.476,0,0,0-35.679,15.128A117.751,117.751,0,0,1,116.726,240.722Zm0-15.447a117.543,117.543,0,0,1,6.292-31.1,90.5,90.5,0,0,1,15.492,31.1Zm131.7-81.5A196.863,196.863,0,0,0,226.7,164.793a195.529,195.529,0,0,0-29.268-44.1,117.657,117.657,0,0,1,32.36-5.963A224.011,224.011,0,0,1,248.428,143.778ZM215.8,178.161a195.189,195.189,0,0,0-19.369,32.123,150.637,150.637,0,0,0-38.66-67.05,118.794,118.794,0,0,1,24.477-16.265A180.037,180.037,0,0,1,215.8,178.161ZM327.624,305.943q-8.193-4.452-16.842-8.127a193.55,193.55,0,0,0-23.909-8.295c-1.66-.46-3.319-.918-5-1.335q-4.978-1.238-10.058-2.209-2.583-.5-5.189-.929a195.16,195.16,0,0,0-23.6-2.425c-.155-.007-.311-.006-.466-.012V240.722H352.956a117.749,117.749,0,0,1-25.078,65.367C327.792,306.042,327.71,305.99,327.624,305.943Zm-14.235-80.668a90.454,90.454,0,0,1,36.759-19.036,117.779,117.779,0,0,1,2.808,19.036Zm-21.734,0H256.2A135.871,135.871,0,0,1,331.85,165.25a118.2,118.2,0,0,1,13.817,26.139A106.384,106.384,0,0,0,291.655,225.275ZM249.348,115.526a117.387,117.387,0,0,1,29.616,7.641,193.876,193.876,0,0,0-18.073,11.185C257.337,127.883,253.467,121.614,249.348,115.526ZM146.713,154.043a134.938,134.938,0,0,1,37.241,71.232H154.431A106.076,106.076,0,0,0,129.9,178.287,118.9,118.9,0,0,1,146.713,154.043ZM201.2,346.5q.332-.081.663-.165c2.706-.681,5.451-1.259,8.219-1.774,3.9-.725,7.847-1.3,11.854-1.683,2.6-.247,5.23-.406,7.874-.5,1.673-.062,3.346-.128,5.035-.128,3.887,0,7.726.2,11.531.526,2.545.216,5.073.494,7.577.85a134.252,134.252,0,0,1,14.47,2.9A117.994,117.994,0,0,1,201.2,346.5Z"/><rect x="436.092" y="136.162" width="18.363" height="98.116" rx="2.663"/><path d="M582.576,235.679a2.636,2.636,0,0,0,2.663-2.523V138.825a2.758,2.758,0,0,0-2.663-2.663H569.681a2.662,2.662,0,0,0-2.662,2.663v57.887h-.139l-58.31-61.951h-3.506a2.634,2.634,0,0,0-2.663,2.524v94.331a2.757,2.757,0,0,0,2.663,2.662H517.82a2.658,2.658,0,0,0,2.662-2.662V171.344h.143l58.588,64.335Z"/><path d="M663.754,234.139a2.521,2.521,0,0,0,2.384,1.54h1.4a2.522,2.522,0,0,0,2.384-1.54l43.452-94.331a2.477,2.477,0,0,0-2.384-3.646H696.7a2.578,2.578,0,0,0-2.385,1.54L667.4,197.974h-.983L639.505,137.7a2.572,2.572,0,0,0-2.38-1.54h-14.3a2.474,2.474,0,0,0-2.38,3.646Z"/><rect x="748.577" y="136.162" width="18.359" height="98.116" rx="2.663"/><path d="M858.335,235.679A48.12,48.12,0,0,0,892.4,222.084a2.671,2.671,0,0,0,.139-3.785l-8.692-8.971a2.585,2.585,0,0,0-3.5,0A33.654,33.654,0,0,1,858.9,217.32c-17.941,0-31.4-14.861-31.4-32.38,0-17.663,13.317-32.659,31.258-32.659a33.164,33.164,0,0,1,21.587,8.27,2.242,2.242,0,0,0,3.5,0l8.553-8.832a2.606,2.606,0,0,0-.144-3.924c-9.528-8.548-19.76-13.034-33.92-13.034a50.459,50.459,0,1,0,0,100.918Z"/><path d="M964.741,231.616V152.981h21.447a2.662,2.662,0,0,0,2.663-2.662V138.825a2.662,2.662,0,0,0-2.663-2.663H924.934a2.662,2.662,0,0,0-2.662,2.663v11.494a2.662,2.662,0,0,0,2.662,2.662h21.448v78.635a2.756,2.756,0,0,0,2.662,2.662h13.034A2.757,2.757,0,0,0,964.741,231.616Z"/><path d="M1100.718,230.633l-43.17-94.332a2.388,2.388,0,0,0-2.384-1.54h-1.4a2.523,2.523,0,0,0-2.384,1.54l-43.592,94.332a2.477,2.477,0,0,0,2.384,3.645h12.195a4.225,4.225,0,0,0,4.063-2.8l6.87-15.139h41.908l6.869,15.139c.983,1.962,1.962,2.8,4.067,2.8h12.195A2.473,2.473,0,0,0,1100.718,230.633Zm-60.55-29.853,13.734-30.837h.422l14.017,30.837Z"/><path d="M472.855,279.2h-35.1a1.667,1.667,0,0,0-1.668,1.667v58.087a1.664,1.664,0,0,0,1.668,1.667h5.7a1.726,1.726,0,0,0,1.668-1.667V315.882h23.425a1.726,1.726,0,0,0,1.668-1.667v-4.828a1.726,1.726,0,0,0-1.668-1.667H445.131V287.454h27.724a1.666,1.666,0,0,0,1.667-1.667v-4.916A1.666,1.666,0,0,0,472.855,279.2Z"/><rect x="499.775" y="279.204" width="9.126" height="61.421" rx="1.668"/><path d="M589.263,279.2h-5.616a1.667,1.667,0,0,0-1.668,1.667v41.5h-.087l-38.084-44.046h-2.193a1.651,1.651,0,0,0-1.667,1.58v59.05a1.726,1.726,0,0,0,1.667,1.667h5.528a1.664,1.664,0,0,0,1.668-1.667V296.226h.087l38.08,45.275h2.285a1.649,1.649,0,0,0,1.667-1.576V280.871A1.729,1.729,0,0,0,589.263,279.2Z"/><path d="M644.515,279.291a2.054,2.054,0,0,0-1.492-.963h-.876a2.047,2.047,0,0,0-1.492.963l-26.94,59.054a1.549,1.549,0,0,0,1.492,2.28h5.528a2.2,2.2,0,0,0,2.018-1.317c1.755-4.036,3.6-7.984,5.353-12.019H656.8l5.441,12.019a2.046,2.046,0,0,0,2.018,1.317h5.527a1.549,1.549,0,0,0,1.493-2.28Zm-12.986,40.452L642.235,295.7h.438l10.793,24.043Z"/><path d="M743.38,279.2h-5.616a1.67,1.67,0,0,0-1.668,1.667v41.5h-.087l-38.08-44.046h-2.193a1.648,1.648,0,0,0-1.667,1.58v59.05a1.723,1.723,0,0,0,1.667,1.667h5.528a1.666,1.666,0,0,0,1.668-1.667V296.226h.088L741.1,341.5h2.281a1.647,1.647,0,0,0,1.667-1.576V280.871A1.726,1.726,0,0,0,743.38,279.2Z"/><path d="M820.661,326.676a1.6,1.6,0,0,0-2.109.087c-4.211,3.244-8.684,5.791-15.092,5.791-12.545,0-22.108-10.443-22.108-22.725s9.476-22.817,22.02-22.817a23.8,23.8,0,0,1,15.18,5.879c.792.792,1.58.792,2.2,0l3.86-3.948a1.631,1.631,0,0,0-.088-2.456c-5.969-5.178-12.373-8.159-21.236-8.159a31.587,31.587,0,1,0,0,63.173,30.113,30.113,0,0,0,21.324-8.509,1.672,1.672,0,0,0,.088-2.368Z"/><rect x="851.171" y="279.204" width="9.126" height="61.421" rx="1.668"/><path d="M913.894,279.291a2.05,2.05,0,0,0-1.489-.963h-.879a2.057,2.057,0,0,0-1.493.963L883.1,338.345a1.55,1.55,0,0,0,1.493,2.28h5.528a2.2,2.2,0,0,0,2.018-1.317c1.755-4.036,3.6-7.984,5.353-12.019H926.18l5.44,12.019a2.04,2.04,0,0,0,2.018,1.317h5.528a1.549,1.549,0,0,0,1.493-2.28Zm-12.987,40.452L911.613,295.7h.438l10.794,24.043Z"/><path d="M996.353,332.467h-23.78v-51.6a1.726,1.726,0,0,0-1.667-1.667h-5.791a1.67,1.67,0,0,0-1.668,1.667v58.087a1.667,1.667,0,0,0,1.668,1.667h31.238a1.667,1.667,0,0,0,1.668-1.667v-4.824A1.667,1.667,0,0,0,996.353,332.467Z"/></svg>
       <div style="font-size:9px;color:var(--blue-600);text-transform:uppercase;letter-spacing:2px;margin-top:6px">Adviser Training Hub</div>
+      <div style="font-size:9px;color:var(--blue-500);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px">Speed. Clarity. Outcomes.</div>
     </div>
     <div style="padding:6px 6px 0">
       <div class="nav-group-label">Main</div>
@@ -299,6 +309,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
         </div>
         <button onclick="document.getElementById('login-overlay').classList.remove('hidden')" style="font-size:10px;color:var(--blue-700);background:none;border:none;cursor:pointer;padding:2px 4px">Edit</button>
       </div>
+      <div id="mic-status" style="padding:2px 10px 4px;font-size:10px"></div>
     </div>
   </div>
 
@@ -316,6 +327,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
       <div style="margin-bottom:18px">
         <div style="font-size:22px;font-weight:800" id="dashboard-greeting">Welcome!</div>
         <div id="dash-welcome-card" style="margin-top:10px"></div>
+      <div id="dash-path-card" style="display:none;margin-bottom:16px"></div>
       </div>
       <div style="margin-bottom:16px;border:1.5px solid var(--blue-100);border-left:4px solid var(--blue-400);border-radius:var(--radius);background:var(--blue-50)">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px">
@@ -397,6 +409,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
       <div class="grid3">
         <div class="sc-card" onclick="startCall('kiwisaver')"><div class="sc-diff" style="color:var(--amber)">Medium</div><div class="sc-title">KiwiSaver Switch</div><div class="sc-desc">Clarify current provider and fund type. Bridge on fee/return differences over 20-30 years. Get date of birth.</div><div class="fw-pill">CLARIFY &rarr; BRIDGE &rarr; SWITCH</div><div class="sc-pb" id="pb-kiwisaver" style="color:var(--text-muted)">Not yet attempted</div><div style="margin-top:8px" onclick="event.stopPropagation()"><button onclick="var d=this.nextElementSibling;var s=d.style.display==='none'||d.style.display==='';d.style.display=s?'block':'none';this.textContent=s?'Learn less ↑':'Learn more ↓'" style="font-size:11px;color:var(--blue-500);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Learn more &#8595;</button><div style="display:none;margin-top:8px;font-size:12px;color:var(--text-muted);line-height:1.65;padding:10px 12px;background:var(--blue-50);border-radius:6px;border-left:3px solid var(--blue-200)"><strong>What you&rsquo;re learning:</strong> Spotting the KiwiSaver opportunity and pivoting confidently. Most people have no idea what fund they&rsquo;re in or who their provider is &mdash; that&rsquo;s your entry point.<br><br><strong>Key line:</strong> &ldquo;The fund you&rsquo;re in can make a difference of hundreds of thousands of dollars over 20 to 30 years. NZ Funds specifically has consistently outperformed the bank providers in terms of net returns.&rdquo;<br><br><strong>Target: 65+</strong></div></div></div>
         <div class="sc-card" onclick="startCall('mortgage')"><div class="sc-diff" style="color:var(--success)">Easy</div><div class="sc-title">Mortgage Referral</div><div class="sc-desc">New homeowner mentions buying a house. Acknowledge milestone. Bridge to Invicta mortgage division.</div><div class="fw-pill">ACK &rarr; CLARIFY &rarr; BRIDGE &rarr; HANDOFF</div><div class="sc-pb" id="pb-mortgage" style="color:var(--text-muted)">Not yet attempted</div><div style="margin-top:8px" onclick="event.stopPropagation()"><button onclick="var d=this.nextElementSibling;var s=d.style.display==='none'||d.style.display==='';d.style.display=s?'block':'none';this.textContent=s?'Learn less ↑':'Learn more ↓'" style="font-size:11px;color:var(--blue-500);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Learn more &#8595;</button><div style="display:none;margin-top:8px;font-size:12px;color:var(--text-muted);line-height:1.65;padding:10px 12px;background:var(--blue-50);border-radius:6px;border-left:3px solid var(--blue-200)"><strong>What you&rsquo;re learning:</strong> Turning a property conversation into a warm referral. This is an easy win &mdash; the client mentioned something valuable. Acknowledge it, ask one quick question, and make the connection feel natural.<br><br><strong>Key line:</strong> &ldquo;Congratulations on that. We actually have a mortgage division &mdash; would it be helpful if I connected you with someone who specialises in that?&rdquo;<br><br><strong>Target: 60+</strong></div></div></div>
+        <div class="sc-card" onclick="startCall('ks_bank')"><div class="sc-diff" style="color:var(--amber)">Medium</div><div class="sc-title">&ldquo;I&rsquo;ll just leave it with my bank&rdquo;</div><div class="sc-desc">Acknowledge convenience &rarr; Clarify if chosen or defaulted &rarr; Bridge to investment specialists &rarr; Ask balance and fund type.</div><div class="fw-pill">ACK &rarr; CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-ks_bank" style="color:var(--text-muted)">Not yet attempted</div><div style="margin-top:8px" onclick="event.stopPropagation()"><button onclick="var d=this.nextElementSibling;var s=d.style.display==='none'||d.style.display==='';d.style.display=s?'block':'none';this.textContent=s?'Learn less ↑':'Learn more ↓'" style="font-size:11px;color:var(--blue-500);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Learn more &#8595;</button><div style="display:none;margin-top:8px;font-size:12px;color:var(--text-muted);line-height:1.65;padding:10px 12px;background:var(--blue-50);border-radius:6px;border-left:3px solid var(--blue-200)"><strong>What you&rsquo;re learning:</strong> Separating banking convenience from investment performance. Most people default to their bank and never revisit it.<br><br><strong>Key line:</strong> &ldquo;Banks are great for borrowing. KiwiSaver is an investment best managed by specialists.&rdquo;<br><br><strong>Target: 65+</strong></div></div></div>
+        <div class="sc-card" onclick="startCall('ks_fees')"><div class="sc-diff" style="color:var(--amber)">Medium</div><div class="sc-title">&ldquo;KiwiSaver fees don&rsquo;t matter&rdquo;</div><div class="sc-desc">Acknowledge fair assumption &rarr; Clarify what they pay &rarr; Bridge with concrete 30-year compounding numbers &rarr; Offer comparison.</div><div class="fw-pill">ACK &rarr; CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-ks_fees" style="color:var(--text-muted)">Not yet attempted</div><div style="margin-top:8px" onclick="event.stopPropagation()"><button onclick="var d=this.nextElementSibling;var s=d.style.display==='none'||d.style.display==='';d.style.display=s?'block':'none';this.textContent=s?'Learn less ↑':'Learn more ↓'" style="font-size:11px;color:var(--blue-500);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Learn more &#8595;</button><div style="display:none;margin-top:8px;font-size:12px;color:var(--text-muted);line-height:1.65;padding:10px 12px;background:var(--blue-50);border-radius:6px;border-left:3px solid var(--blue-200)"><strong>What you&rsquo;re learning:</strong> Making small percentages feel real. 0.5% on a growing balance over 30 years is $40,000 to $80,000 in net returns.<br><br><strong>Key line:</strong> &ldquo;A 0.5% difference in fees over 30 years compounds to $40,000 to $80,000. That&rsquo;s not a small number.&rdquo;<br><br><strong>Target: 65+</strong></div></div></div>
+        <div class="sc-card" onclick="startCall('ks_firsthome')"><div class="sc-diff" style="color:var(--success)">Easy</div><div class="sc-title">Using KiwiSaver for First Home</div><div class="sc-desc">Acknowledge the goal &rarr; Clarify timeframe &rarr; Bridge on fund type risk for short-term goals &rarr; Recommend balanced/conservative.</div><div class="fw-pill">ACK &rarr; CLARIFY &rarr; BRIDGE &rarr; RTS</div><div class="sc-pb" id="pb-ks_firsthome" style="color:var(--text-muted)">Not yet attempted</div><div style="margin-top:8px" onclick="event.stopPropagation()"><button onclick="var d=this.nextElementSibling;var s=d.style.display==='none'||d.style.display==='';d.style.display=s?'block':'none';this.textContent=s?'Learn less ↑':'Learn more ↓'" style="font-size:11px;color:var(--blue-500);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Learn more &#8595;</button><div style="display:none;margin-top:8px;font-size:12px;color:var(--text-muted);line-height:1.65;padding:10px 12px;background:var(--blue-50);border-radius:6px;border-left:3px solid var(--blue-200)"><strong>What you&rsquo;re learning:</strong> Matching fund type to goal. A growth fund makes sense for retirement but is risky for a 3-5 year first home purchase.<br><br><strong>Key line:</strong> &ldquo;If you&rsquo;re buying in 3 to 5 years, a market drop the year before could significantly reduce what you&rsquo;ve got.&rdquo;<br><br><strong>Target: 70+</strong></div></div></div>
+        <div class="sc-card" onclick="startCall('ks_unsure')"><div class="sc-diff" style="color:var(--success)">Starter</div><div class="sc-title">&ldquo;I don&rsquo;t know what fund I&rsquo;m in&rdquo;</div><div class="sc-desc">Reassure it&rsquo;s normal &rarr; Explain the three fund types simply &rarr; Clarify age and timeframe &rarr; Advise the right fund type.</div><div class="fw-pill">REASSURE &rarr; EXPLAIN &rarr; CLARIFY &rarr; ADVISE</div><div class="sc-pb" id="pb-ks_unsure" style="color:var(--text-muted)">Not yet attempted</div><div style="margin-top:8px" onclick="event.stopPropagation()"><button onclick="var d=this.nextElementSibling;var s=d.style.display==='none'||d.style.display==='';d.style.display=s?'block':'none';this.textContent=s?'Learn less ↑':'Learn more ↓'" style="font-size:11px;color:var(--blue-500);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Learn more &#8595;</button><div style="display:none;margin-top:8px;font-size:12px;color:var(--text-muted);line-height:1.65;padding:10px 12px;background:var(--blue-50);border-radius:6px;border-left:3px solid var(--blue-200)"><strong>What you&rsquo;re learning:</strong> Being the warm, clear educator. Most people have no idea what fund they&rsquo;re in. Make this feel easy, not embarrassing.<br><br><strong>Key line:</strong> &ldquo;That&rsquo;s really common. Conservative is lower risk, growth is higher returns, balanced is the middle ground.&rdquo;<br><br><strong>Target: 65+</strong></div></div></div>
       </div>
     </div>
 
@@ -613,11 +629,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
         <div style="font-size:22px;font-weight:800;margin-bottom:6px">Team Leaderboard</div>
         <div style="font-size:13px;color:var(--text-muted)">Rankings are based on average score across all sessions completed on this device. Scores update after every session. The leaderboard resets monthly &mdash; top 3 are recognised at the team meeting.</div>
       </div>
-      <div id="leaderboard-podium"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <select id="lb-office-filter" class="setup-input" style="width:auto;padding:6px 10px;font-size:12px" onchange="renderLeaderboard()">
+          <option value="All">All Offices</option>
+          <option value="Auckland">Auckland</option>
+          <option value="Wellington">Wellington</option>
+          <option value="Christchurch">Christchurch</option>
+          <option value="Philippines">Philippines</option>
+        </select>
+        <span id="lb-sync-time" style="font-size:11px;color:var(--text-muted)"></span>
+        <button class="btn" onclick="renderLeaderboard()" style="font-size:11px;padding:5px 10px">Refresh</button>
+      </div>
+      <div class="grid3" id="lb-podium" style="margin-bottom:16px"></div>
       <div class="card" style="margin-top:16px">
         <div class="section-head">Full Rankings</div>
-        <table class="mtable"><thead><tr><th>#</th><th>Adviser</th><th>Level</th><th>Sessions</th><th>Avg Score</th><th>Best</th><th>Streak</th></tr></thead>
-        <tbody id="leaderboard-tbody"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">Complete sessions to appear on the leaderboard</td></tr></tbody></table>
+        <div id="lb-list"></div>
       </div>
       <div style="margin-top:14px;padding:12px 14px;background:var(--blue-50);border-radius:var(--radius);border-left:4px solid var(--blue-200)">
         <div style="font-size:12px;color:var(--text-muted);line-height:1.6">&#128161; <strong>Tip:</strong> A high session count with a low average score means you&rsquo;re practising but not improving. Slow down and focus on one scenario until your score is consistently above 65 before moving to the next one. Volume without quality won&rsquo;t move your ranking.</div>
@@ -629,6 +655,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
       <div style="margin-bottom:20px">
         <div style="font-size:22px;font-weight:800;margin-bottom:6px">Team Overview</div>
         <div style="font-size:13px;color:var(--text-muted)">All data is sourced from this device&rsquo;s local storage. Advisers need to use the same browser on the same device for their stats to appear here. Share one team device or use the same machine for accurate team-wide data.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <span id="mgr-sync-time" style="font-size:11px;color:var(--text-muted)"></span>
+        <button class="btn" onclick="renderManager()" style="font-size:11px;padding:5px 10px">Refresh</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <span id="mgr-sync-time" style="font-size:11px;color:var(--text-muted)"></span>
+        <button class="btn" onclick="renderManager()" style="font-size:11px;padding:5px 10px">Refresh</button>
       </div>
       <div style="margin-bottom:16px;border:1px solid var(--border-light);border-radius:var(--radius);overflow:hidden">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--blue-50);cursor:pointer" onclick="var b=document.getElementById('mgr-howto');var s=b.style.display==='none';b.style.display=s?'block':'none';this.querySelector('.mgr-toggle').textContent=s?'Hide':'Show'">
@@ -784,6 +818,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
         <div class="ss"><div class="ss-lbl">Bridge</div><div class="ss-val" id="ss2">&mdash;</div></div>
         <div class="ss"><div class="ss-lbl">Return to Script</div><div class="ss-val" id="ss3">&mdash;</div></div>
       </div>
+      <div id="score-coaching-band" style="padding:12px 14px;border-radius:8px;border-left:4px solid;margin-bottom:14px;display:none"></div>
       <div id="score-coach-msg"></div>
       <div style="font-size:13px;font-weight:700;margin-bottom:9px">Checkpoint Breakdown</div>
       <div id="score-breakdown" style="margin-bottom:16px"></div>
@@ -813,6 +848,69 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
 </div>
 
 <script>
+/*
+ * SUPABASE SCHEMA (run in Supabase SQL editor):
+ *
+ * create table sessions (
+ *   id uuid default gen_random_uuid() primary key,
+ *   adviser_name text not null,
+ *   office text,
+ *   scenario text not null,
+ *   scenario_key text not null,
+ *   score integer not null,
+ *   duration integer,
+ *   xp_earned integer,
+ *   created_at timestamptz default now()
+ * );
+ * alter table sessions enable row level security;
+ * create policy "anyone can insert" on sessions for insert with check (true);
+ * create policy "anyone can read" on sessions for select using (true);
+ *
+ * localStorage keys:
+ *   inv_name           - adviser display name
+ *   inv_role           - adviser | manager
+ *   inv_office         - Auckland | Wellington | Christchurch | Philippines
+ *   inv_el             - ElevenLabs API key
+ *   inv_voice          - selected TTS voice name
+ *   inv_recent_profiles - JSON array of recent adviser names
+ *   invicta_history    - JSON array of session results (capped 100)
+ *   invicta_sync_queue - JSON array of sessions pending Supabase sync
+ */
+const SUPA_URL='https://yntfppymahqrrchxxhwc.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InludGZwcHltYWhxcnJjaHh4aHdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMzgxNTQsImV4cCI6MjA5NzgxNDE1NH0.9QXserwLLaPnlteHc3LeV-iuhgh2qeBShd5wyh_6jnQ';
+let supabase=null;
+try{supabase=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;}catch(e){supabase=null;}
+
+async function saveSessionToSupabase(entry){
+  const row={
+    adviser_name:entry.adviserName,
+    office:localStorage.getItem('inv_office')||'Auckland',
+    scenario:entry.scenario||entry.scenarioKey,
+    scenario_key:entry.scenarioKey,
+    score:entry.score,
+    duration:entry.duration||0,
+    xp_earned:entry.xpEarned||0
+  };
+  if(supabase){
+    try{await supabase.from('sessions').insert(row);}
+    catch(e){queueSync(row);}
+  }else{queueSync(row);}
+}
+function queueSync(row){
+  let q=JSON.parse(localStorage.getItem('invicta_sync_queue')||'[]');
+  q.push(row);if(q.length>200)q=q.slice(-200);
+  localStorage.setItem('invicta_sync_queue',JSON.stringify(q));
+}
+async function flushSyncQueue(){
+  if(!supabase)return;
+  let q=JSON.parse(localStorage.getItem('invicta_sync_queue')||'[]');
+  if(!q.length)return;
+  try{
+    await supabase.from('sessions').insert(q);
+    localStorage.removeItem('invicta_sync_queue');
+  }catch(e){}
+}
+
 // ── PROFILE ───────────────────────────────────────────────────────────────
 let SEL_ROLE='adviser';
 function selRole(el,r){document.querySelectorAll('.role-opt-lg').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');SEL_ROLE=r;}
@@ -821,10 +919,49 @@ function saveProfile(){
   const name=document.getElementById('input-name').value.trim();
   if(!name){alert('Please enter your name.');return;}
   localStorage.setItem('inv_name',name);localStorage.setItem('inv_role',SEL_ROLE);
+  const office=document.getElementById('input-office').value;
+  localStorage.setItem('inv_office',office);
+  const office=document.getElementById('input-office').value;
+  localStorage.setItem('inv_office',office);
   document.getElementById('login-overlay').classList.add('hidden');
   addRecentProfile(name);
   updateProfile();
   renderDashboard();
+  requestMicAccess();
+}
+function requestMicAccess(){
+  if(micStream){updateMicIndicator(true);return;}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+    micStream=stream;
+    updateMicIndicator(true);
+  }).catch(()=>{
+    updateMicIndicator(false);
+    // Show mic blocked message in sidebar
+  });
+}
+function updateMicIndicator(ok){
+  const el=document.getElementById('mic-status');
+  if(!el)return;
+  el.innerHTML=ok
+    ?'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--success);margin-right:5px;vertical-align:middle"></span><span style="font-size:10px;color:var(--success)">Mic ready</span>'
+    :'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--danger);margin-right:5px;vertical-align:middle"></span><span style="font-size:10px;color:var(--danger)">Mic blocked</span>';
+}
+function requestMicAccess(){
+  if(micStream){updateMicIndicator(true);return;}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+    micStream=stream;
+    updateMicIndicator(true);
+  }).catch(()=>{
+    updateMicIndicator(false);
+    // Show mic blocked message in sidebar
+  });
+}
+function updateMicIndicator(ok){
+  const el=document.getElementById('mic-status');
+  if(!el)return;
+  el.innerHTML=ok
+    ?'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--success);margin-right:5px;vertical-align:middle"></span><span style="font-size:10px;color:var(--success)">Mic ready</span>'
+    :'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--danger);margin-right:5px;vertical-align:middle"></span><span style="font-size:10px;color:var(--danger)">Mic blocked</span>';
 }
 function updateProfile(){
   const name=localStorage.getItem('inv_name')||'';
@@ -836,6 +973,9 @@ function updateProfile(){
   document.getElementById('input-name').value=name;
   document.querySelectorAll('.role-opt-lg').forEach(o=>o.classList.toggle('sel',o.dataset.r===role));
   SEL_ROLE=role;
+  const savedOffice=localStorage.getItem('inv_office')||'Auckland';
+  const offSel=document.getElementById('input-office');
+  if(offSel)offSel.value=savedOffice;
   updateSidebarXP();
 }
 function addRecentProfile(name){
@@ -855,6 +995,8 @@ function loadRecentProfiles(){
 }
 
 // ── CONFIG ────────────────────────────────────────────────────────────────
+let micStream=null;
+let micStream=null;
 let EL_KEY='', SEL_VOICE='Callum';
 const VOICE_IDS={Callum:'N2lVS1w4EtoT3dr4eOWO',Charlotte:'XB0fDUnXU5powFXDhCwa',Brian:'nPczCjzI2devNBz1zQrb',Alice:'Xb7hH8MSUJpSbSDYk0k2'};
 const PERS=[
@@ -898,6 +1040,16 @@ function addXP(name,earned){
 function updateSidebarXP(){
   const name=localStorage.getItem('inv_name')||'';
   if(!name)return;
+  // First Week Path
+  const pathCard=document.getElementById('dash-path-card');
+  if(pathCard){
+    if(history.length<5){
+      pathCard.style.display='';
+      pathCard.innerHTML='<div class="card" style="border-left:4px solid var(--blue-400)"><div style="font-size:15px;font-weight:800;margin-bottom:6px">Your First Week Path</div><div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">New here? Start with these in order. Each one builds on the last.</div><ol style="padding-left:18px;font-size:13px;line-height:2;color:var(--text)"><li><strong>Day 1:</strong> <a href="javascript:startCall(\x27quote\x27)" style="color:var(--blue-500);text-decoration:none">Opening - Just getting a quote</a></li><li><strong>Day 2:</strong> <a href="javascript:startCall(\x27callback\x27)" style="color:var(--blue-500);text-decoration:none">Easy objections</a></li><li><strong>Day 3:</strong> <a href="javascript:showView(\x27meeting\x27)" style="color:var(--blue-500);text-decoration:none">Run a full meeting section</a></li><li><strong>Day 4:</strong> <a href="javascript:startCall(\x27ks_bank\x27)" style="color:var(--blue-500);text-decoration:none">KiwiSaver scenarios</a></li><li><strong>Day 5:</strong> <a href="javascript:startCall(\x27afford\x27)" style="color:var(--blue-500);text-decoration:none">Hard objections</a></li></ol></div>';
+    }else{
+      pathCard.style.display='none';
+    }
+  }
   const xp=parseInt(localStorage.getItem(getXPKey(name))||'0');
   const info=getLevelInfo(xp);
   const min=info.min,max=info.max===Infinity?xp+200:info.max;
@@ -930,6 +1082,7 @@ function saveSession(entry){
   h.unshift(entry);
   if(h.length>100)h=h.slice(0,100);
   localStorage.setItem('invicta_history',JSON.stringify(h));
+  saveSessionToSupabase(entry);
 }
 function getAdviserHistory(name){
   return JSON.parse(localStorage.getItem('invicta_history')||'[]').filter(h=>h.adviserName===name);
@@ -967,7 +1120,12 @@ const SC={
   hiddenfees:  {title:'Hidden Fees Question',          pill:'COST OBJECTION',    names:['Sam','Chris','Alex','Jordan','Jamie','Casey'],   dlg:'hiddenfees',   fw:['Acknowledge','Bridge','Return to Script']},
   onlinequote: {title:'Thought Would Get Quote Online',pill:'ONLINE EXPECTATION',names:['Jess','Mel','Tegan','Aroha','Ngaio','Sarah'],   dlg:'onlinequote',  fw:['Acknowledge','Bridge','Return to Script']},
   kiwisaver:   {title:'KiwiSaver Switch',              pill:'KIWISAVER',         names:['Aroha','Liam','Priya','James','Mei','Hannah'],   dlg:'kiwisaver',    fw:['Clarify','Bridge','Switch']},
-  mortgage:    {title:'Mortgage Referral',             pill:'MORTGAGE REFERRAL', names:['Sam','Claire','Daniel','Tara','Josh','Luke'],    dlg:'mortgage',     fw:['Acknowledge','Clarify','Bridge','Handoff']}
+  mortgage:    {title:'Mortgage Referral',             pill:'MORTGAGE REFERRAL', names:['Sam','Claire','Daniel','Tara','Josh','Luke'],    dlg:'mortgage',     fw:['Acknowledge','Clarify','Bridge','Handoff']},
+  // KiwiSaver scenarios
+  ks_bank:     {title:"I'll Just Leave It With My Bank", pill:'KIWISAVER',         names:['Aroha','Liam','Priya','James','Mei','Hannah'],   dlg:'ks_bank',      fw:['Acknowledge','Clarify','Bridge','Return to Script']},
+  ks_fees:     {title:"KiwiSaver Fees Don't Matter",     pill:'KIWISAVER',         names:['Daniel','Ravi','Sam','Ben','Matiu','Aaron'],     dlg:'ks_fees',      fw:['Acknowledge','Clarify','Bridge','Return to Script']},
+  ks_firsthome:{title:'Using KiwiSaver for First Home',  pill:'KIWISAVER',         names:['Emma','Grace','Lucy','Hana','Ngaio','Claire'],   dlg:'ks_firsthome', fw:['Acknowledge','Clarify','Bridge','Return to Script']},
+  ks_unsure:   {title:"I Don't Know What Fund I'm In",   pill:'KIWISAVER',         names:['Sarah','Tane','Wei','Joshua','Michael','Aroha'], dlg:'ks_unsure',    fw:['Reassure','Explain','Clarify','Advise']}
 };
 
 // ── DIALOGUE ──────────────────────────────────────────────────────────────
@@ -1092,6 +1250,39 @@ const DLG={
       {client:["So what does Invicta do for mortgages?","How does it work if we use your mortgage team?","What can you offer that our current broker can't?","Would switching to you cause any problems?"],hint:"BRIDGE to referral — introduce the Invicta mortgage division. Warm intro, no hard sell. One sentence and an offer to connect them.",script:'"We have a mortgage division here at Invicta — our mortgage adviser works alongside the insurance team so everything is aligned. Would you like me to set up an intro call? It only takes a couple of minutes and there\'s no obligation."',good_kw:['invicta','invicta mortgage','our mortgage','mortgage team','mortgage division','we have a','we work with mortgage','mortgage side','warm intro','introduce you','put you in touch','connect you','happy to refer','set up a call','refer you'],soften:["Yeah, that sounds like a good idea.","Sure — an intro call would be fine.","Okay, why not. Set up the call.","That would be helpful actually."],resist:["I think we'll stick with who we've got.","I don't want to complicate things.","We're pretty far along the process."]}
     ]
   }
+,
+  ks_bank:{
+    openers:["Oh I just leave my KiwiSaver with ANZ - it's already set up there.","I haven't really thought about it. My KiwiSaver's with my bank so it seems fine.","I just use the bank for everything including KiwiSaver. Easier that way.","My KiwiSaver's with Westpac. I haven't looked at changing it."],
+    turns:[
+      {client:["The bank makes it easy - everything's in one place.","I've always been with them, never thought about switching.","It just went there automatically when I started my job.","I don't really know how it works to be honest."],hint:"ACKNOWLEDGE - fair, the bank is convenient. Then gently clarify: did they actively choose the bank or just end up there by default? This opens the conversation.",script:'"That makes sense - the banks do make it easy. Can I ask, did you actually choose them for your KiwiSaver or did you just end up there by default?"',good_kw:['choose','chose','default','end up there','did you pick','actively choose','happen to','put there'],soften:["Oh I think I just ended up there - it came default with my account.","Actually I don't know. It just happened.","I think my employer just set it up with whoever they use.","I'm not sure - I never really chose."],resist:["I'm happy with them.","It's easy having it at the bank.","I don't see why I'd move it."]},
+      {client:["What's wrong with keeping it at the bank?","Banks are trustworthy though.","My bank gives me good service on everything else.","I've been with them for years."],hint:"CLARIFY then BRIDGE - banks are great for mortgages and banking, but KiwiSaver is an investment. Specialists in investment typically outperform bank default funds over decades.",script:'"Banks are great for borrowing and day-to-day banking - that's what they specialise in. KiwiSaver is an investment, and investment specialists tend to manage it differently. The gap in returns over 30 years between a bank default fund and an actively managed fund can be significant."',good_kw:['banks are great','specialise','investment specialist','actively managed','returns','30 years','thirty years','gap','investment','difference','not their specialty'],soften:["Oh I didn't realise there was that much difference.","So the bank isn't necessarily the best for KiwiSaver?","That makes sense - they're a bank, not an investment company.","Okay, I hadn't thought about it like that."],resist:["I still think the bank is fine.","How much difference can it really be?","I'm not sure I want the hassle of switching."]},
+      {client:["Alright, it's probably worth having a look.","Okay, what would I need to do?","How do I find out what I'm actually in?","Fine - what's the process?"],hint:"RETURN TO SCRIPT - great. Ask for their balance and fund type. This is all you need to do a comparison.",script:'"Let's have a quick look. Do you know roughly what your balance is and what fund type you're in - growth, balanced, or conservative?"',good_kw:['balance','fund type','growth','balanced','conservative','how much','roughly','what fund','which fund'],soften:["I think I have about $40,000 but I'm not sure of the fund.","I honestly don't know - I'd have to look it up.","I think it's a balanced fund but I'm not certain.","About $28,000. No idea about the fund."],resist:["I'd need to look that up.","Can you do a comparison without those details?","I'll think about it first."]}
+    ]
+  },
+  ks_fees:{
+    openers:["KiwiSaver fees are tiny though - like a fraction of a percent. Why would that matter?","I heard KiwiSaver fees are so small it doesn't make a difference.","My friend said fees on KiwiSaver are negligible. I'm not worried about them.","Fees seem like such a small thing to stress about."],
+    turns:[
+      {client:["It's like 0.5% - that's basically nothing.","Fees are small no matter who you're with.","I've seen the fee schedule and it looks fine to me.","Surely it doesn't add up to that much."],hint:"ACKNOWLEDGE - fair assumption. Then clarify what they're actually paying and what fund type they're in. Small percentages on a growing balance over decades create large absolute differences.",script:'"That's a fair assumption. Can I ask - do you know what percentage you're paying and what fund type you're in? The impact of fees depends a lot on which fund and how long it compounds."',good_kw:['fair assumption','what percentage','what fund','fund type','compound','how long','depends on','what are you paying','do you know'],soften:["I think it's about 0.8% but I'm in the balanced fund.","I'm honestly not sure what I pay.","I don't know the details - I've never really looked.","Something around 0.5 or 0.6%."],resist:["I'm sure it's fine.","I really don't think it matters much.","It can't be that significant."]},
+      {client:["Okay so what's the actual difference?","How much are we talking over 30 years?","Give me a number.","I'm still not convinced this is a big deal."],hint:"BRIDGE - make it concrete. A 0.5% difference in fees on a $100,000 balance over 30 years compounds to $40,000-$80,000 difference in real money. That's not a small number.",script:'"Here's a way to think about it. A 0.5% difference in annual fees on $100,000 over 30 years compounding works out to roughly $40,000 to $80,000 in net returns. That's the cost of getting the wrong fund."',good_kw:['$40,000','$80,000','40,000','80,000','compounding','30 years','real money','net returns','not small','makes a difference'],soften:["Okay that is actually a lot more than I thought.","$40,000 is significant.","I didn't realise it adds up like that.","That does put it in perspective."],resist:["I'm still not sure I believe that.","Those are big numbers - are they realistic?","It depends on so many things though."]},
+      {client:["Fair enough - maybe I should get it reviewed.","What would a review involve?","Okay, what do you need from me?","Alright, how does this work?"],hint:"RETURN TO SCRIPT - great. Get their balance and fund type to run a comparison. Keep it easy.",script:'"It's really straightforward. I just need your current balance and fund type - I can run a comparison and show you what the options look like. Do you know roughly what your balance is?"',good_kw:['straightforward','balance','fund type','comparison','show you','options','roughly','current balance','what fund'],soften:["I think around $35,000. I'm in a balanced fund with ANZ.","Not sure of the exact balance - maybe $50,000?","I'd have to check the app but I think around $60,000.","Something in the $40,000 range I think."],resist:["I'd need to look it up first.","Can I get back to you on this?","I'll think about it."]}
+    ]
+  },
+  ks_firsthome:{
+    openers:["I'm actually saving my KiwiSaver to buy my first home - so I'm not that worried about changing anything.","I want to use my KiwiSaver for a house deposit, so it's different for me.","My plan is to withdraw it for a first home, so I don't think I need to switch funds.","I'm not planning to retire with it - I want to use it for a house."],
+    turns:[
+      {client:["I'm hoping to buy in the next couple of years.","We're saving hard - hopefully within 3 years.","Hopefully within 5 years if things go well.","It depends on the market but maybe 2 to 4 years."],hint:"ACKNOWLEDGE - great goal. Then clarify the timeframe clearly. This is key: if buying within 3 to 5 years, a growth fund is the wrong choice. Fund type needs to match their timeline.",script:'"That's a great goal - good on you for planning ahead. So are you thinking 2 to 3 years, or more like 4 to 5? The reason I ask is the timeframe changes everything when it comes to which fund type makes sense."',good_kw:['great goal','good on you','timeframe','2 to 3','3 to 5','which fund','fund type','changes everything','reason i ask','timeline'],soften:["I'd say 3 years if I can manage it.","Probably 4 to 5 years realistically.","Ideally within 2 years but realistically 3.","We're aiming for 3 to 4 years."],resist:["I haven't really thought that far.","It depends on so many things.","Maybe 5 years, maybe sooner."]},
+      {client:["What does my fund type have to do with buying a house?","I just assumed it would be fine whatever fund I'm in.","I'm in a growth fund - is that okay?","Why does the fund matter if I'm withdrawing it anyway?"],hint:"BRIDGE - if buying within 3 to 5 years, a growth fund carries real risk of a market drop right before they need it. A conservative or balanced fund for short-term goals is safer, even if lower returns.",script:'"If you're buying in 3 to 5 years, a growth fund carries real risk - if the market drops the year before you're ready to buy, your balance could be significantly lower. For a short timeframe, a conservative or balanced fund is actually safer, even though the returns are lower."',good_kw:['growth fund','risk','market drop','before you buy','conservative','balanced','short timeframe','safer','lower returns','3 to 5 years','ready to buy'],soften:["Oh I hadn't thought about that.","So I could lose money right before I need it?","That does make sense - I hadn't considered the timing.","I assumed growth was always better."],resist:["But the growth fund has better returns.","Isn't it better to have more money in it?","I'll just hope the market is fine."]},
+      {client:["Okay, so what fund should I be in?","What would you recommend for my situation?","Should I switch to a conservative fund now?","What's the right call here?"],hint:"RETURN TO SCRIPT - advise reviewing the fund type to match the timeframe. The right answer is probably balanced or conservative given a 3 to 5 year horizon. Offer to do a quick review.",script:'"For a 3 to 5 year first home goal, a balanced or conservative fund is the right fit - you want the balance to be there and predictable when you need it. Let me do a quick review of what you're in now and what would suit your timeline."',good_kw:['balanced','conservative','3 to 5 year','right fit','balance there','predictable','quick review','what you are in','suit your timeline'],soften:["Okay that makes sense - I should probably switch.","A balanced fund sounds right for me then.","Yeah, let's do that review.","I didn't realise this was something that needed adjusting."],resist:["I want to keep my growth fund for now.","Can I think about it?","I'll talk to my partner first."]}
+    ]
+  },
+  ks_unsure:{
+    openers:["I honestly have no idea what fund I'm in - I've never really looked at it.","I set it up years ago and I haven't checked since.","I think I'm in a balanced fund? Or maybe conservative? I'm not sure.","I got put into a fund when I started my job and I've never changed it."],
+    turns:[
+      {client:["I just assumed it was fine.","My employer set it up so I figured they know best.","I've never really looked at the details.","It just kind of runs itself doesn't it?"],hint:"REASSURE - this is very normal. Most people don't know what fund they're in. No judgement. Then gently explain the difference between the three main fund types in plain language.",script:'"That's actually really common - most people don't know what fund they're in. It runs in the background and you don't get reminded to check it. There are basically three main types: conservative, balanced, and growth. Each works quite differently over time."',good_kw:['really common','most people','runs in the background','three main types','conservative','balanced','growth','each works differently'],soften:["Oh good, I'm not the only one.","That's a relief.","Okay, so what are the differences?","Right, that makes sense."],resist:["I still think it's probably fine.","I don't really want to change anything.","I'll look into it another time."]},
+      {client:["So what's the difference between them?","Which one should I be in?","What does conservative vs growth mean in practice?","How do I know which is right for me?"],hint:"EXPLAIN - keep it simple. Conservative: lowest risk, lower returns, good near retirement or for short goals. Growth: higher returns over time, more short-term volatility, good for younger people with 10+ years. Balanced: middle ground.",script:'"The simple way to think about it: conservative is lower risk and lower returns, good if you're close to retirement or buying a house soon. Growth has higher long-term returns but more short-term movement, better if you've got 10 or more years. Balanced is the middle ground."',good_kw:['conservative','growth','balanced','lower risk','lower returns','higher returns','close to retirement','10 years','more years','short-term','long-term','middle ground'],soften:["Okay that's really clear - I think I've got years before retirement.","So growth would make more sense for me then?","That explains it well, thank you.","Right, so it depends on how old I am."],resist:["I'm not sure which I'm in though.","It all sounds a bit complicated.","I'll just leave it as it is."]},
+      {client:["I'm 32 so I've got a while to go before retirement.","I'm about 30 - probably 35 years until I need it.","I'm not planning to retire for a long time.","I'm young enough that it shouldn't matter much yet."],hint:"CLARIFY and ADVISE - at 30 to 35 with a long horizon, they should almost certainly be in a growth fund. Suggest a quick review to confirm what they're in and whether it matches their age.",script:'"At your age with 30-plus years until retirement, you're probably not in the best fund for your situation. Most people in that age group benefit from being in a growth fund - the extra returns over 30 years can make a massive difference. Let me check what you're currently in."',good_kw:['your age','30 plus years','30 years','growth fund','massive difference','check what you are in','benefit from','age group','long term'],soften:["Yeah that makes sense - let's check.","I'd like to know what I'm actually in.","Okay let's sort this out.","I probably should have looked at this sooner."],resist:["I'll look it up myself.","I'm happy to leave it for now.","Can I think about it?"]}
+    ]
+  }
 };
 
 // ── SCORING ───────────────────────────────────────────────────────────────
@@ -1175,6 +1366,31 @@ const SCORING={
     {step:'Clarify',label:'Asked if they have a mortgage broker',kw:['broker','mortgage broker','who are you using','have someone','already got a broker','are you locked in','who\'s your','which broker'],pts:30,script:'\"Do you already have a mortgage broker sorted?\"'},
     {step:'Bridge',label:'Mentioned Invicta mortgage division',kw:['invicta','invicta mortgage','our mortgage','mortgage team','mortgage division','we have a','we work with mortgage'],pts:25,script:'\"We have a mortgage division at Invicta.\"'},
     {step:'Return to Script',label:'Offered warm intro',kw:['warm intro','introduce you','put you in touch','connect you','happy to refer','set up a call','introduce to','refer you','intro call'],pts:25,script:'\"Would you like me to set up an intro call with our mortgage adviser?\"'}
+  ]}
+,
+  ks_bank:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Validated convenience of banking at one place',kw:['makes sense','convenient','easy','fair','understandable'],pts:15,script:'"That makes sense - the banks do make it easy."'},
+    {step:'Clarify',label:'Asked if they chose bank or defaulted there',kw:['choose','chose','default','end up there','did you pick','actively choose'],pts:25,script:'"Did you actively choose them or just end up there by default?"'},
+    {step:'Bridge',label:'Banks specialise in banking, not investment management',kw:['banks are great','specialise','investment specialist','actively managed','returns','30 years','thirty years','gap','investment'],pts:35,script:'"Banks specialise in borrowing - KiwiSaver is an investment best managed by specialists."'},
+    {step:'Return to Script',label:'Asked for balance and fund type',kw:['balance','fund type','growth','balanced','conservative','how much','what fund'],pts:25,script:'"What's your balance and what fund type are you in?"'}
+  ]},
+  ks_fees:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Called it a fair assumption',kw:['fair assumption','fair','makes sense','understand','get that','that is reasonable'],pts:15,script:'"That's a fair assumption."'},
+    {step:'Clarify',label:'Asked what they pay and what fund type',kw:['what percentage','what fund','fund type','do you know','what are you paying'],pts:25,script:'"Do you know what percentage you're paying and what fund you're in?"'},
+    {step:'Bridge',label:'Concrete dollar impact of fee difference over 30 years',kw:['$40,000','$80,000','40,000','80,000','compounding','30 years','net returns','makes a difference'],pts:35,script:'"A 0.5% difference in fees over 30 years compounds to $40,000 to $80,000 in real money."'},
+    {step:'Return to Script',label:'Asked for balance to run comparison',kw:['balance','comparison','current balance','roughly','straightforward','what fund'],pts:25,script:'"I just need your balance and fund type to run a comparison."'}
+  ]},
+  ks_firsthome:{total:100,checkpoints:[
+    {step:'Acknowledge',label:'Acknowledged the first home goal positively',kw:['great goal','good on you','great plan','exciting','excellent','well done'],pts:15,script:'"That's a great goal - good on you for planning ahead."'},
+    {step:'Clarify',label:'Asked for clear timeframe to purchase',kw:['timeframe','2 to 3','3 to 5','when are you','how long','how many years','when do you','timeline'],pts:25,script:'"Are you thinking 2 to 3 years or more like 4 to 5? The timeframe changes which fund type makes sense."'},
+    {step:'Bridge',label:'Growth fund risk for short-term first home goal',kw:['growth fund','risk','market drop','conservative','balanced','short timeframe','safer','3 to 5 years'],pts:35,script:'"A growth fund carries real risk if buying in 3 to 5 years - a market drop could hit your balance right when you need it."'},
+    {step:'Return to Script',label:'Recommended balanced or conservative and offered review',kw:['balanced','conservative','right fit','quick review','suit your timeline','match your goal'],pts:25,script:'"For a 3 to 5 year goal, a balanced or conservative fund is the right fit. Let me review what you're in now."'}
+  ]},
+  ks_unsure:{total:100,checkpoints:[
+    {step:'Reassure',label:'Normalised not knowing fund type',kw:['really common','most people','normal','runs in the background'],pts:20,script:'"That's really common - most people don't know what fund they're in."'},
+    {step:'Explain',label:'Explained the three fund types simply',kw:['conservative','balanced','growth','lower risk','higher returns','short-term','long-term','three main types'],pts:30,script:'"Conservative is lower risk and lower returns. Growth is higher returns over time. Balanced is the middle ground."'},
+    {step:'Clarify',label:'Asked age or years until retirement',kw:['how old','your age','years until','when do you retire','long time','how many years','retirement'],pts:20,script:'"How old are you? That helps me understand which fund type makes sense for your situation."'},
+    {step:'Advise',label:'Recommended growth fund for younger adviser and offered to check',kw:['growth fund','long term','30 years','make a difference','check what you are in','benefit from','massive difference'],pts:30,script:'"At your age with 30-plus years to go, a growth fund is almost certainly right for you. Let me check what you're currently in."'}
   ]}
 };
 
@@ -1285,6 +1501,20 @@ function showScore(){
     const pct2=max>0?Math.round(earned/max*100):0;
     sEl.textContent=pct2+'%';
     sEl.style.color=pct2>=70?'var(--success)':pct2>=40?'var(--amber)':'var(--danger)';
+  }
+
+  // Coaching band
+  const band=pct>=80?'Invicta standard. Clean and client-first. Do it again so it's automatic.'
+    :pct>=65?'Solid. One or two missed checkpoints is the difference between a converted lead and a lost one.'
+    :pct>=45?'Getting there. Most common issue is jumping to the bridge before clarifying. Slow down, follow the order.'
+    :'Keep going. Low early scores are normal. Fix one step at a time, starting with Acknowledge.';
+  const bandColour=pct>=80?'var(--success)':pct>=65?'var(--blue-500)':pct>=45?'var(--amber)':'var(--text-muted)';
+  const coachEl=document.getElementById('score-coaching-band');
+  if(coachEl){
+    coachEl.style.display='';
+    coachEl.style.borderLeftColor=bandColour;
+    coachEl.style.background=pct>=80?'#D1FAE5':pct>=65?'var(--blue-50)':pct>=45?'#FFF3DB':'var(--off-white)';
+    coachEl.textContent=band;
   }
 
   // Coaching callout
@@ -1453,8 +1683,14 @@ function toggleMute(){
 
 // Escape key during call (Task 11.7)
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'&&document.getElementById('call-screen')&&!document.getElementById('call-screen').classList.contains('hidden')){
-    if(confirm('End this call and see your score?'))endCall();
+  if(e.key==='Escape'){
+    const callScreen=document.getElementById('call-screen');
+    const scoreScreen=document.getElementById('score-screen');
+    if(callScreen&&!callScreen.classList.contains('hidden')){
+      if(confirm('End this call and see your score?'))endCall();
+    } else if(scoreScreen&&!scoreScreen.classList.contains('hidden')){
+      closeScore();
+    }
   }
 });
 
@@ -1465,7 +1701,7 @@ function showView(v){
   document.querySelectorAll('.nav-item').forEach(n=>{
     n.classList.toggle('active',!!(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+v+"'")));
   });
-  const titles={dashboard:'Dashboard',practice:'Practice',meeting:'Full Meeting',tasks:'Tasks',progress:'Progress',leaderboard:'Leaderboard',manager:'Team Overview'};
+  const titles={dashboard:'Dashboard',practice:'Practice',meeting:'Full Meeting',tasks:'Tasks',progress:'Progress',leaderboard:'Leaderboard',manager:'Team Overview',quiz:'Quiz',playbook:'Playbook'};
   document.getElementById('page-title').textContent=titles[v]||v;
   document.title=(titles[v]||v)+' — Invicta Training Hub';
   if(v==='dashboard')renderDashboard();
@@ -1604,113 +1840,123 @@ function renderProgress(){
 }
 
 // ── LEADERBOARD ───────────────────────────────────────────────────────────
-function renderLeaderboard(){
-  const all=JSON.parse(localStorage.getItem('invicta_history')||'[]');
-  const myName=localStorage.getItem('inv_name')||'';
-  const adv={};
-  all.forEach(h=>{
-    if(!adv[h.adviserName])adv[h.adviserName]={name:h.adviserName,sessions:0,total:0,best:0};
-    adv[h.adviserName].sessions++;
-    adv[h.adviserName].total+=h.score;
-    if(h.score>adv[h.adviserName].best)adv[h.adviserName].best=h.score;
-  });
-  const rows=Object.values(adv).map(a=>{
-    a.avg=Math.round(a.total/a.sessions);
-    a.xp=parseInt(localStorage.getItem(getXPKey(a.name))||'0');
-    a.streak=getStreak(a.name);
-    a.info=getLevelInfo(a.xp);
-    return a;
-  }).sort((a,b)=>b.avg-a.avg);
-
-  const tbody=document.getElementById('leaderboard-tbody');
-  const podium=document.getElementById('leaderboard-podium');
-
-  if(rows.length<2){
-    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">No other advisers have trained on this device yet. Share the link with your team.</td></tr>';
-    podium.innerHTML='';return;
+async async function renderLeaderboard(){
+  const lb=document.getElementById('lb-list');
+  const podium=document.getElementById('lb-podium');
+  const filterEl=document.getElementById('lb-office-filter');
+  const syncEl=document.getElementById('lb-sync-time');
+  const officeFilter=filterEl?filterEl.value:'All';
+  
+  let rows=[];
+  if(supabase){
+    try{
+      let q=supabase.from('sessions').select('adviser_name,office,score,scenario_key,xp_earned');
+      const {data,error}=await q;
+      if(!error&&data)rows=data;
+    }catch(e){}
   }
-
-  const medals=['🥇','🥈','🥉'];
-  const top3=rows.slice(0,3);
-  const podiumOrder=[top3[1],top3[0],top3[2]].filter(Boolean);
-  const podiumClasses=['podium-bar-2','podium-bar-1','podium-bar-3'];
-  podium.innerHTML=`<div class="podium-wrap">
-    ${podiumOrder.map((a,i)=>{
-      const rank=a===top3[0]?1:a===top3[1]?2:3;
-      return `<div class="podium-card">
-        <div class="av-circle" style="margin:0 auto 6px">${getInitials(a.name)}</div>
-        <div style="font-size:12px;font-weight:700">${a.name}</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">${a.avg}%</div>
-        <div class="${podiumClasses[i]}"><div style="font-size:18px">${medals[rank-1]}</div></div>
-      </div>`;
-    }).join('')}
-  </div>`;
-
-  tbody.innerHTML=rows.map((a,i)=>`
-    <tr style="${a.name===myName?'background:rgba(46,125,212,0.08)':''}">
-      <td>${i<3?medals[i]:i+1}</td>
-      <td style="font-weight:${a.name===myName?'700':'400'}">${a.name}${a.name===myName?' <span style="font-size:10px;color:var(--blue-500)">(you)</span>':''}</td>
-      <td>${a.info.emoji} ${a.info.name}</td>
-      <td>${a.sessions}</td>
-      <td><span style="color:${a.avg>=70?'var(--success)':a.avg>=45?'var(--amber)':'var(--danger)'};font-weight:700">${a.avg}%</span></td>
-      <td>${a.best}%</td>
-      <td>${a.streak>0?'🔥 '+a.streak:'—'}</td>
-    </tr>`).join('');
+  if(!rows.length){
+    const h=JSON.parse(localStorage.getItem('invicta_history')||'[]');
+    rows=h.map(s=>({adviser_name:s.adviserName,office:localStorage.getItem('inv_office')||'Auckland',score:s.score,scenario_key:s.scenarioKey,xp_earned:s.xpEarned||0}));
+  }
+  
+  if(syncEl)syncEl.textContent='Last synced '+new Date().toLocaleTimeString('en-NZ',{hour:'2-digit',minute:'2-digit'});
+  
+  if(officeFilter!=='All')rows=rows.filter(r=>r.office===officeFilter);
+  
+  const map={};
+  rows.forEach(r=>{
+    const k=r.adviser_name;
+    if(!map[k])map[k]={name:k,office:r.office,sessions:0,totalScore:0,best:0,xp:0};
+    map[k].sessions++;
+    map[k].totalScore+=r.score;
+    if(r.score>map[k].best)map[k].best=r.score;
+    map[k].xp+=(r.xp_earned||0);
+  });
+  
+  const sorted=Object.values(map).sort((a,b)=>b.best-a.best||b.sessions-a.sessions);
+  
+  if(podium){
+    const top=sorted.slice(0,3);
+    const MEDALS=['🥇','🥈','🥉'];
+    podium.innerHTML=top.map((p,idx)=>{
+      const info=getLevelInfo(p.xp);
+      return '<div class="card" style="text-align:center;padding:14px 10px"><div style="font-size:20px">'+MEDALS[idx]+'</div><div style="font-weight:700;font-size:13px;margin-top:4px">'+p.name+'</div><div style="font-size:11px;color:var(--text-muted)">'+(p.office||'')+'</div><div style="font-size:11px;color:var(--blue-500);margin-top:2px">'+info.emoji+' '+info.name+'</div><div style="font-size:12px;font-weight:700;margin-top:3px">Best: '+p.best+'%</div></div>';
+    }).join('');
+  }
+  
+  if(!lb)return;
+  if(!sorted.length){lb.innerHTML='<div style="font-size:13px;color:var(--text-muted);padding:20px 0">No data yet. Complete sessions to appear here.</div>';return;}
+  const rows2=sorted.map((r,i)=>{
+    const info=getLevelInfo(r.xp);
+    const avg=r.sessions?Math.round(r.totalScore/r.sessions):0;
+    return '<tr><td><strong>'+(i+1)+'</strong></td><td>'+r.name+'</td><td><span style="font-size:11px;color:var(--text-muted)">'+(r.office||'')+'</span></td><td>'+info.emoji+' '+info.name+'</td><td>'+r.sessions+'</td><td>'+avg+'%</td><td><strong>'+r.best+'%</strong></td></tr>';
+  }).join('');
+  lb.innerHTML='<table class="mtable"><thead><tr><th>#</th><th>Name</th><th>Office</th><th>Level</th><th>Sessions</th><th>Avg</th><th>Best</th></tr></thead><tbody>'+rows2+'</tbody></table>';
 }
 
 // ── MANAGER ───────────────────────────────────────────────────────────────
-function renderManager(){
-  const all=JSON.parse(localStorage.getItem('invicta_history')||'[]');
-  const cardsEl=document.getElementById('manager-cards');
-  if(all.length===0){
-    cardsEl.innerHTML='<div class="card" style="text-align:center;padding:32px;color:var(--text-muted)">No training data yet. Advisers need to complete sessions to appear here.</div>';
-    document.getElementById('mgr-team-avg').textContent='—';
-    document.getElementById('mgr-active').textContent='0';
-    document.getElementById('mgr-sessions').textContent='0';
-    document.getElementById('mgr-attention').textContent='0';
-    return;
+async async function renderManager(){
+  const el=document.getElementById('manager-cards');
+  const syncEl=document.getElementById('mgr-sync-time');
+  if(!el)return;
+  
+  let rows=[];
+  if(supabase){
+    try{
+      const weekAgo=new Date(Date.now()-7*24*60*60*1000).toISOString();
+      const {data,error}=await supabase.from('sessions').select('adviser_name,office,score,scenario_key,created_at').gte('created_at',weekAgo);
+      if(!error&&data)rows=data;
+    }catch(e){}
   }
-  const sevenAgo=new Date(Date.now()-7*86400000).toISOString();
-  const recent=all.filter(h=>h.date>sevenAgo);
-  const advMap={};
-  all.forEach(h=>{
-    if(!advMap[h.adviserName])advMap[h.adviserName]={name:h.adviserName,sessions:[],recentSessions:[]};
-    advMap[h.adviserName].sessions.push(h);
-    if(h.date>sevenAgo)advMap[h.adviserName].recentSessions.push(h);
+  if(!rows.length){
+    const h=JSON.parse(localStorage.getItem('invicta_history')||'[]');
+    const weekAgo=Date.now()-7*24*60*60*1000;
+    rows=h.filter(s=>new Date(s.date).getTime()>weekAgo).map(s=>({adviser_name:s.adviserName,office:localStorage.getItem('inv_office')||'Auckland',score:s.score,scenario_key:s.scenarioKey,created_at:s.date}));
+  }
+  
+  if(syncEl)syncEl.textContent='Last synced '+new Date().toLocaleTimeString('en-NZ',{hour:'2-digit',minute:'2-digit'});
+  
+  const offices=['Auckland','Wellington','Christchurch','Philippines'];
+  const offSummary={};
+  offices.forEach(o=>offSummary[o]={sessions:0,totalScore:0});
+  rows.forEach(r=>{const o=r.office||'Auckland';if(offSummary[o]){offSummary[o].sessions++;offSummary[o].totalScore+=r.score;}});
+  
+  const map={};
+  rows.forEach(r=>{
+    const k=r.adviser_name;
+    if(!map[k])map[k]={name:k,office:r.office||'Auckland',sessions:0,totalScore:0,best:0,scenarios:new Set()};
+    map[k].sessions++;map[k].totalScore+=r.score;
+    if(r.score>map[k].best)map[k].best=r.score;
+    map[k].scenarios.add(r.scenario_key);
   });
-  const advArr=Object.values(advMap);
-  const teamAvg=all.length>0?Math.round(all.reduce((a,b)=>a+b.score,0)/all.length):0;
-  const attention=advArr.filter(a=>a.sessions.reduce((s,h)=>s+h.score,0)/a.sessions.length<40).length;
-  document.getElementById('mgr-team-avg').textContent=teamAvg+'%';
-  document.getElementById('mgr-active').textContent=advArr.length;
-  document.getElementById('mgr-sessions').textContent=recent.length;
-  document.getElementById('mgr-attention').textContent=attention;
-
-  cardsEl.innerHTML=advArr.map(a=>{
-    const avg=Math.round(a.sessions.reduce((s,h)=>s+h.score,0)/a.sessions.length);
-    const best=Math.max(...a.sessions.map(h=>h.score));
-    const xp=parseInt(localStorage.getItem(getXPKey(a.name))||'0');
-    const lvl=getLevelInfo(xp);
-    const streak=getStreak(a.name);
-    const last7=a.sessions.slice(0,7).reverse();
-    const miniChart=last7.map(s=>`<div class="mini-bar" style="height:${Math.max(4,Math.round(s.score*44/100))}px;background:${s.score>=70?'var(--success)':s.score>=45?'var(--amber)':'var(--danger)'}" title="${s.score}%"></div>`).join('');
-    return `<div class="card adviser-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="av-circle">${getInitials(a.name)}</div>
-          <div><div style="font-size:14px;font-weight:700">${a.name}</div><div style="font-size:11px;color:var(--text-muted)">${lvl.emoji} ${lvl.name} · ${xp} XP</div></div>
-        </div>
-        <div style="text-align:right"><div style="font-size:20px;font-weight:800;color:${avg>=70?'var(--success)':avg>=45?'var(--amber)':'var(--danger)'}">${avg}%</div><div style="font-size:10px;color:var(--text-muted)">avg</div></div>
-      </div>
-      <div class="grid4" style="margin-bottom:12px;gap:8px">
-        <div style="text-align:center;padding:6px;background:var(--off-white);border-radius:6px"><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Sessions</div><div style="font-size:15px;font-weight:700">${a.sessions.length}</div></div>
-        <div style="text-align:center;padding:6px;background:var(--off-white);border-radius:6px"><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">This Week</div><div style="font-size:15px;font-weight:700">${a.recentSessions.length}</div></div>
-        <div style="text-align:center;padding:6px;background:var(--off-white);border-radius:6px"><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Best</div><div style="font-size:15px;font-weight:700;color:var(--success)">${best}%</div></div>
-        <div style="text-align:center;padding:6px;background:var(--off-white);border-radius:6px"><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Streak</div><div style="font-size:15px;font-weight:700">${streak>0?'🔥'+streak:'—'}</div></div>
-      </div>
-      <div class="mini-chart">${miniChart}</div>
-    </div>`;
+  
+  const advisers=Object.values(map).sort((a,b)=>b.sessions-a.sessions);
+  
+  const active=document.getElementById('mgr-active');
+  const sessions=document.getElementById('mgr-sessions');
+  const attn=document.getElementById('mgr-attention');
+  if(active)active.textContent=advisers.length;
+  if(sessions)sessions.textContent=rows.length;
+  if(attn)attn.textContent=advisers.filter(a=>a.sessions&&Math.round(a.totalScore/a.sessions)<40).length;
+  
+  const offCards=offices.map(o=>{
+    const s=offSummary[o];
+    const avg=s.sessions?Math.round(s.totalScore/s.sessions):0;
+    return '<div class="card card-sm"><div class="stat-label">'+o+'</div><div style="font-size:18px;font-weight:800">'+s.sessions+'</div><div style="font-size:11px;color:var(--text-muted)">'+(s.sessions?avg+'% avg':'No sessions')+'</div></div>';
   }).join('');
+  
+  let advTable='<div style="font-size:13px;color:var(--text-muted);padding:16px 0">No activity this week yet.</div>';
+  if(advisers.length){
+    const trows=advisers.map(a=>{
+      const avg=a.sessions?Math.round(a.totalScore/a.sessions):0;
+      const col=avg>=70?'var(--success)':avg>=50?'var(--amber)':'var(--danger)';
+      return '<tr><td><strong>'+a.name+'</strong></td><td><span style="font-size:11px;color:var(--text-muted)">'+a.office+'</span></td><td>'+a.sessions+'</td><td style="color:'+col+';font-weight:700">'+avg+'%</td><td>'+a.best+'%</td><td style="font-size:11px;color:var(--text-muted)">'+a.scenarios.size+'</td></tr>';
+    }).join('');
+    advTable='<table class="mtable"><thead><tr><th>Name</th><th>Office</th><th>Sessions</th><th>Avg</th><th>Best</th><th>Scenarios</th></tr></thead><tbody>'+trows+'</tbody></table>';
+  }
+  
+  el.innerHTML='<div style="margin-bottom:16px"><div class="section-head" style="margin-bottom:10px">Office Summary - This Week</div><div class="grid4">'+offCards+'</div></div><div class="section-head" style="margin-bottom:10px">Advisers - This Week</div>'+advTable;
 }
 
 // ── SCORE SCREEN ACTIONS ──────────────────────────────────────────────────
@@ -2244,6 +2490,7 @@ function updatePBBadges(){
     document.getElementById('login-overlay').classList.add('hidden');
     updateProfile();
     renderDashboard();
+    requestMicAccess();
   }
   loadRecentProfiles();
 })();
