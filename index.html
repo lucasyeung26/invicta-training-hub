@@ -288,7 +288,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
       <div class="nav-item" onclick="showView('progress')"><i class="ti ti-chart-line"></i>Progress</div>
       <div class="nav-item" onclick="showView('leaderboard')"><i class="ti ti-trophy"></i>Leaderboard</div>
       <div class="nav-group-label">Management</div>
-      <div class="nav-item" onclick="showView('manager')"><i class="ti ti-users"></i>Team Overview</div>
+      <div class="nav-item" onclick="requireMgrPin(()=>showView('manager'))"><i class="ti ti-users"></i>Team Overview</div>
     </div>
     <div class="sidebar-footer">
       <div style="padding:0 0 10px">
@@ -307,7 +307,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
             <div style="font-size:11px;color:var(--blue-600)" id="user-sub">Adviser</div>
           </div>
         </div>
-        <button onclick="document.getElementById('login-overlay').classList.remove('hidden')" style="font-size:10px;color:var(--blue-700);background:none;border:none;cursor:pointer;padding:2px 4px">Edit</button>
+        <button onclick="document.getElementById('login-overlay').classList.remove('hidden')" style="font-size:10px;color:var(--blue-700);background:none;border:none;cursor:pointer;padding:2px 4px">Edit</button><button onclick="switchUser()" style="font-size:10px;color:var(--blue-700);background:none;border:none;cursor:pointer;padding:2px 4px;margin-left:4px">Switch</button>
       </div>
       <div id="mic-status" style="padding:2px 10px 4px;font-size:10px"></div>
     </div>
@@ -879,7 +879,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
 const SUPA_URL='https://yntfppymahqrrchxxhwc.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InludGZwcHltYWhxcnJjaHh4aHdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMzgxNTQsImV4cCI6MjA5NzgxNDE1NH0.9QXserwLLaPnlteHc3LeV-iuhgh2qeBShd5wyh_6jnQ';
 let supabase=null;
-try{supabase=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;}catch(e){supabase=null;}
+try{
+  if(window.supabase&&window.supabase.createClient){
+    supabase=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+  }
+}catch(e){console.warn('Supabase unavailable, running offline');supabase=null;}
 
 async function saveSessionToSupabase(entry){
   const row={
@@ -921,8 +925,6 @@ function saveProfile(){
   localStorage.setItem('inv_name',name);localStorage.setItem('inv_role',SEL_ROLE);
   const office=document.getElementById('input-office').value;
   localStorage.setItem('inv_office',office);
-  const office=document.getElementById('input-office').value;
-  localStorage.setItem('inv_office',office);
   document.getElementById('login-overlay').classList.add('hidden');
   addRecentProfile(name);
   updateProfile();
@@ -931,29 +933,12 @@ function saveProfile(){
 }
 function requestMicAccess(){
   if(micStream){updateMicIndicator(true);return;}
+  if(!navigator.mediaDevices){updateMicIndicator(false);return;}
   navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
     micStream=stream;
     updateMicIndicator(true);
   }).catch(()=>{
     updateMicIndicator(false);
-    // Show mic blocked message in sidebar
-  });
-}
-function updateMicIndicator(ok){
-  const el=document.getElementById('mic-status');
-  if(!el)return;
-  el.innerHTML=ok
-    ?'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--success);margin-right:5px;vertical-align:middle"></span><span style="font-size:10px;color:var(--success)">Mic ready</span>'
-    :'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--danger);margin-right:5px;vertical-align:middle"></span><span style="font-size:10px;color:var(--danger)">Mic blocked</span>';
-}
-function requestMicAccess(){
-  if(micStream){updateMicIndicator(true);return;}
-  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
-    micStream=stream;
-    updateMicIndicator(true);
-  }).catch(()=>{
-    updateMicIndicator(false);
-    // Show mic blocked message in sidebar
   });
 }
 function updateMicIndicator(ok){
@@ -995,7 +980,6 @@ function loadRecentProfiles(){
 }
 
 // ── CONFIG ────────────────────────────────────────────────────────────────
-let micStream=null;
 let micStream=null;
 let EL_KEY='', SEL_VOICE='Callum';
 const VOICE_IDS={Callum:'N2lVS1w4EtoT3dr4eOWO',Charlotte:'XB0fDUnXU5powFXDhCwa',Brian:'nPczCjzI2devNBz1zQrb',Alice:'Xb7hH8MSUJpSbSDYk0k2'};
@@ -2495,6 +2479,60 @@ function updatePBBadges(){
   loadRecentProfiles();
 })();
 
+// ── SWITCH USER ──────────────────────────────────────────────────────────
+function switchUser(){
+  localStorage.removeItem('inv_name');
+  localStorage.removeItem('inv_role');
+  localStorage.removeItem('inv_office');
+  mgrUnlocked=false;
+  document.getElementById('login-overlay').classList.remove('hidden');
+  document.getElementById('input-name').value='';
+  loadRecentProfiles();
+}
+
+// ── MANAGER PIN ──────────────────────────────────────────────────────────
+const MGR_PIN='1111'; // ← Change this line to update the manager PIN
+let mgrUnlocked=false;
+
+function requireMgrPin(callback){
+  if(mgrUnlocked){callback();return;}
+  document.getElementById('mgr-pin-overlay').classList.remove('hidden');
+  document.getElementById('mgr-pin-input').value='';
+  document.getElementById('mgr-pin-error').textContent='';
+  window._mgrPinCallback=callback;
+  setTimeout(()=>document.getElementById('mgr-pin-input').focus(),100);
+}
+function submitMgrPin(){
+  const val=document.getElementById('mgr-pin-input').value.trim();
+  if(val===MGR_PIN){
+    mgrUnlocked=true;
+    document.getElementById('mgr-pin-overlay').classList.add('hidden');
+    if(window._mgrPinCallback){window._mgrPinCallback();window._mgrPinCallback=null;}
+  }else{
+    document.getElementById('mgr-pin-error').textContent='Incorrect PIN. Try again.';
+    document.getElementById('mgr-pin-input').value='';
+    document.getElementById('mgr-pin-input').focus();
+  }
+}
+function closeMgrPin(){
+  document.getElementById('mgr-pin-overlay').classList.add('hidden');
+  window._mgrPinCallback=null;
+}
+
 </script>
+<!-- Manager PIN overlay -->
+<div id="mgr-pin-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(10,22,40,0.92);backdrop-filter:blur(8px);z-index:600;display:flex;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border-radius:16px;padding:32px 28px;width:320px;max-width:90vw;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.5)">
+    <div style="font-size:28px;margin-bottom:8px">&#128274;</div>
+    <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px">Manager Access</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px">Enter your PIN to continue</div>
+    <input id="mgr-pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="&bull;&bull;&bull;&bull;"
+      style="width:100%;padding:12px;font-size:22px;text-align:center;letter-spacing:8px;border:2px solid var(--blue-800);border-radius:8px;background:var(--off-white);color:var(--text);font-family:inherit;box-sizing:border-box;margin-bottom:10px"
+      onkeydown="if(event.key==='Enter')submitMgrPin()"/>
+    <div id="mgr-pin-error" style="font-size:12px;color:var(--danger);min-height:16px;margin-bottom:10px"></div>
+    <button onclick="submitMgrPin()" class="btn btn-primary" style="width:100%;padding:12px;font-size:14px">Enter</button>
+    <button onclick="closeMgrPin()" style="margin-top:10px;font-size:12px;color:var(--text-muted);background:none;border:none;cursor:pointer">Cancel</button>
+  </div>
+</div>
 </body>
 </html>
