@@ -23,7 +23,7 @@
   --blue-600:#24407A;--blue-500:#5FCAE9;--blue-400:#7DD4EF;
   --blue-300:#A0E0F5;--blue-200:#C8EEF9;--blue-100:#DEF1FB;--blue-50:#F0FAFD;
   /* ── Neutrals ── */
-  --white:#FFFFFF;--off-white:#F8FAFC;--border:#E2E8F0;--border-light:#EEF2F7;
+  --white:#FFFFFF;--surface:#FFFFFF;--off-white:#F8FAFC;--border:#E2E8F0;--border-light:#EEF2F7;
   --text:#0F1D3D;--text-muted:#64748B;
   /* ── Semantic ── */
   --success:#059669;--danger:#DC2626;--amber:#D97706;
@@ -1104,7 +1104,7 @@ function updateSidebarXP(){
   // First Week Path
   const pathCard=document.getElementById('dash-path-card');
   if(pathCard){
-    if(history.length<5){
+    if(getAdviserHistory(name).length<5){
       pathCard.style.display='';
       pathCard.innerHTML='<div class="card" style="border-left:4px solid var(--blue-400)"><div style="font-size:15px;font-weight:800;margin-bottom:6px">Your First Week Path</div><div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">New here? Start with these in order. Each one builds on the last.</div><ol style="padding-left:18px;font-size:13px;line-height:2;color:var(--text)"><li><strong>Day 1:</strong> <a href="javascript:startCall(\x27quote\x27)" style="color:var(--blue-500);text-decoration:none">Opening - Just getting a quote</a></li><li><strong>Day 2:</strong> <a href="javascript:startCall(\x27callback\x27)" style="color:var(--blue-500);text-decoration:none">Easy objections</a></li><li><strong>Day 3:</strong> <a href="javascript:showView(\x27meeting\x27)" style="color:var(--blue-500);text-decoration:none">Run a full meeting section</a></li><li><strong>Day 4:</strong> <a href="javascript:startCall(\x27ks_bank\x27)" style="color:var(--blue-500);text-decoration:none">KiwiSaver scenarios</a></li><li><strong>Day 5:</strong> <a href="javascript:startCall(\x27afford\x27)" style="color:var(--blue-500);text-decoration:none">Hard objections</a></li></ol></div>';
     }else{
@@ -2106,6 +2106,8 @@ async function renderManager(){
   const active=document.getElementById('mgr-active');
   const sessions=document.getElementById('mgr-sessions');
   const attn=document.getElementById('mgr-attention');
+  const teamAvgEl=document.getElementById('mgr-team-avg');
+  if(teamAvgEl)teamAvgEl.textContent=rows.length?Math.round(rows.reduce((a,r)=>a+r.score,0)/rows.length)+'%':'—';
   if(active)active.textContent=advisers.length;
   if(sessions)sessions.textContent=rows.length;
   if(attn)attn.textContent=advisers.filter(a=>a.sessions&&Math.round(a.totalScore/a.sessions)<40).length;
