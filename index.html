@@ -878,12 +878,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--off-white);color:
  */
 const SUPA_URL='https://yntfppymahqrrchxxhwc.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InludGZwcHltYWhxcnJjaHh4aHdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMzgxNTQsImV4cCI6MjA5NzgxNDE1NH0.9QXserwLLaPnlteHc3LeV-iuhgh2qeBShd5wyh_6jnQ';
-let supabase=null;
+let _db=null;
 try{
   if(window.supabase&&window.supabase.createClient){
-    supabase=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+    _db=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   }
-}catch(e){console.warn('Supabase unavailable, running offline');supabase=null;}
+}catch(e){console.warn('Supabase unavailable, running offline');_db=null;}
 
 async function saveSessionToSupabase(entry){
   const row={
@@ -895,8 +895,8 @@ async function saveSessionToSupabase(entry){
     duration:entry.duration||0,
     xp_earned:entry.xpEarned||0
   };
-  if(supabase){
-    try{await supabase.from('sessions').insert(row);}
+  if(_db){
+    try{await _db.from('sessions').insert(row);}
     catch(e){queueSync(row);}
   }else{queueSync(row);}
 }
@@ -906,11 +906,11 @@ function queueSync(row){
   localStorage.setItem('invicta_sync_queue',JSON.stringify(q));
 }
 async function flushSyncQueue(){
-  if(!supabase)return;
+  if(!_db)return;
   let q=JSON.parse(localStorage.getItem('invicta_sync_queue')||'[]');
   if(!q.length)return;
   try{
-    await supabase.from('sessions').insert(q);
+    await _db.from('sessions').insert(q);
     localStorage.removeItem('invicta_sync_queue');
   }catch(e){}
 }
@@ -1832,9 +1832,9 @@ async function renderLeaderboard(){
   const officeFilter=filterEl?filterEl.value:'All';
   
   let rows=[];
-  if(supabase){
+  if(_db){
     try{
-      let q=supabase.from('sessions').select('adviser_name,office,score,scenario_key,xp_earned');
+      let q=_db.from('sessions').select('adviser_name,office,score,scenario_key,xp_earned');
       const {data,error}=await q;
       if(!error&&data)rows=data;
     }catch(e){}
@@ -1886,10 +1886,10 @@ async function renderManager(){
   if(!el)return;
   
   let rows=[];
-  if(supabase){
+  if(_db){
     try{
       const weekAgo=new Date(Date.now()-7*24*60*60*1000).toISOString();
-      const {data,error}=await supabase.from('sessions').select('adviser_name,office,score,scenario_key,created_at').gte('created_at',weekAgo);
+      const {data,error}=await _db.from('sessions').select('adviser_name,office,score,scenario_key,created_at').gte('created_at',weekAgo);
       if(!error&&data)rows=data;
     }catch(e){}
   }
