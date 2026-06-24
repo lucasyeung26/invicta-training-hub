@@ -1768,20 +1768,30 @@ function startListening(){
   recog=new SR();
   recog.continuous=true;recog.interimResults=true;recog.lang='en-NZ';
   let final='';
+  let silenceTimer=null;
+  let hasSpeech=false;
+  const SILENCE_MS=1500; // auto-advance 1.5s after last word
   recog.onresult=(e)=>{
     let interim='';
     for(let i=e.resultIndex;i<e.results.length;i++){
-      if(e.results[i].isFinal){final+=e.results[i][0].transcript+' ';}
-      else{interim+=e.results[i][0].transcript;}
+      if(e.results[i].isFinal){final+=e.results[i][0].transcript+' ';hasSpeech=true;}
+      else{interim+=e.results[i][0].transcript;hasSpeech=true;}
     }
     if(interim)document.getElementById('call-status').textContent=interim;
     if(final.trim())interimBuf=final.trim();
+    // Reset silence countdown on every speech event
+    if(hasSpeech&&callRunning){
+      clearTimeout(silenceTimer);
+      document.getElementById('call-status').textContent=interim||'...';
+      silenceTimer=setTimeout(()=>{if(recog&&callRunning)recog.stop();},SILENCE_MS);
+    }
   };
   recog.onend=()=>{
+    clearTimeout(silenceTimer);
     if(interimBuf){addTx('adviser',interimBuf);adviserTx.push(interimBuf);interimBuf='';}
     if(callRunning)advanceTurn();
   };
-  recog.onerror=(e)=>{if(e.error!=='aborted'&&callRunning)advanceTurn();};
+  recog.onerror=(e)=>{clearTimeout(silenceTimer);if(e.error!=='aborted'&&callRunning)advanceTurn();};
   recog.start();
   setMicState('listening');
 }
